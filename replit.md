@@ -1,7 +1,7 @@
 # 中小制造企业报价辅助系统
 
-学生比赛演示用中文 Python + Streamlit 报价计算器。所有展示数据为模拟数据。第一阶段不接入数据库或机器学习。
-启动：`sh start.sh`。主要说明见 `README.md`。下方为原有模板信息，本计算器不依赖模板 API 或数据库。
+学生比赛演示用中文 Python + Streamlit 报价系统。所有展示数据为模拟数据。已接入SQLAlchemy + psycopg 3与Replit内置PostgreSQL，不使用机器学习。
+启动：`sh start.sh`。数据库运维见 `DATABASE_GUIDE.md`。下方为原有模板信息，本系统不依赖模板API或Drizzle；不要用模板空schema推送覆盖Python业务表。
 
 ## Run & Operate
 

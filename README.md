@@ -3,7 +3,8 @@
 中文 Python + Streamlit 学生比赛演示，当前完成六页导航、报价计算器和数据中心。
 重点是价格分析与报价决策；数据中心支持模拟库存、历史付款记录及付款表现汇总，库存提醒待实现。
 数据生成规则、CSV格式、导入及付款口径见 `DATA_GUIDE.md`。
-所有示例数据为模拟数据；不接入数据库和机器学习，不持久化保存输入。
+所有示例数据为模拟数据；业务基础数据已接入PostgreSQL持久化，不接入机器学习。
+数据库初始化、检查、关系说明与导入规则见 `DATABASE_GUIDE.md`。
 
 ## 启动
 
@@ -11,6 +12,8 @@
 
 ```bash
 python -m pip install -r requirements.txt
+python db_manage.py init
+python db_manage.py seed
 sh start.sh
 ```
 
@@ -22,12 +25,16 @@ Replit 中运行 `artifacts/quotation: web` 工作流后打开“制造企业报
 
 - `app.py`：应用入口、公共说明与六页侧边栏导航。
 - `quote_page.py`：原报价计算器的表单、校验提示、结果与公式核对。
-- `pending_page.py`：五个待实现页面的统一展示和范围说明。
+- `pending_page.py`：待实现页面的统一展示和范围说明。
 - `calculator.py`：独立计算函数，使用 Decimal 进行十进制计算。
 - `data_page.py`：数据中心表格、CSV下载上传和付款汇总。
 - `data_service.py`：CSV解析、跨表校验、可比交易筛选及付款汇总逻辑。
 - `generate_data.py`：固定种子数据生成及CSV输出。
-- `shared_data.py`：有效数据的会话内共享及原子导入。
+- `shared_data.py`：页面数据库读写入口及安全错误展示。
+- `db_schema.py`：八张业务表及约束定义。
+- `database.py`：安全连接、数据库读取、事务化合并导入。
+- `db_manage.py`：开发初始化、演示导入、连接检查与记录计数命令。
+- `verify_database.py`：实际数据库幂等、回滚和不可用验证。
 - `history_page.py`：读取同产品、币种、单位的历史交易（报价建议待实现）。
 - `tests/test_data.py`：生成、校验、引用、付款口径回归测试。
 - `tests/test_calculator.py`：计算函数回归测试，不依赖页面。
@@ -66,4 +73,4 @@ Replit 中运行 `artifacts/quotation: web` 工作流后打开“制造企业报
    表单未提交的修改不保存；当前会话中的最近一次计算结果可继续查看。
 
 运行计算逻辑测试：`python -m unittest discover -s tests -v`。
-启动脚本、依赖版本及预览服务配置沿用原有设置。
+启动脚本和预览服务配置沿用原有设置；新增SQLAlchemy及psycopg 3依赖。
