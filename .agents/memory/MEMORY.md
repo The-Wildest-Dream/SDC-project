@@ -1,1 +1,2 @@
 - [Streamlit 预览约束](streamlit-preview.md) — 本项目使用 Python；预览需要注册服务路由，不能仅启动普通工作流。
+- [产品重点与真实性](product-scope.md) — 价格分析与报价决策优先，辅助功能次要；未实现功能必须明确标注。
