@@ -1,17 +1,84 @@
-"""仅提供有效历史数据读取，不实现自动报价建议。"""
+from datetime import date
+from decimal import ROUND_CEILING
 import streamlit as st
-from data_service import comparable_transactions
 from shared_data import get_data
+from inquiry_service import list_inquiries, submit
+from database import DatabaseUnavailable
+from quotation_rules import calculate, percentile, number, check_price, COSTS
+from quotation_ui import show_costs, reminders
 
 st.header("历史价格与报价建议")
-st.caption("模拟数据 · 当前仅提供历史交易读取，价格分析与报价建议待实现。")
-data = get_data()
-products = {p["产品ID"]: p for p in data["产品"]}
-if not products:
-    st.info("数据库暂无产品。请先在数据中心导入模拟产品数据。")
+st.caption("模拟数据 · 透明成本规则与历史统计，未训练AI模型。历史价格不是自动报价指令。")
+try:
+    rows = list_inquiries()
+except DatabaseUnavailable as error:
+    st.error(str(error))
     st.stop()
-product_id = st.selectbox("选择产品", list(products),
-                         format_func=lambda key: f"{key} · {products[key]['产品名称']}")
-product = products[product_id]
-st.info(f"仅显示同一产品ID、币种（{product['币种']}）和计量单位（{product['单位']}）的交易；不换汇、不换算单位。")
-st.dataframe(comparable_transactions(data, product_id), hide_index=True, use_container_width=True)
+if not rows:
+    st.info("请先保存一份询价。")
+    st.page_link("quote_page.py", label="新建询价")
+    st.stop()
+ids = [r["id"] for r in rows]
+current = st.session_state.get("current_inquiry", ids[0])
+identifier = st.selectbox("当前询价", ids, index=ids.index(current) if current in ids else 0)
+st.session_state.current_inquiry = identifier
+r = next(r for r in rows if r["id"] == identifier)
+s = r["snapshot"]
+st.write(f"产品：{s['product_name']} · 客户：{r['customer_id']} · 数量：{r['quantity']} {r['unit']} · 币种：{r['currency']}")
+st.write(f"交付日期：{r['delivery_date']} · 有效期至：{r['valid_until']} · 状态：{r['status']}")
+result = calculate(r["quantity"], s["costs"], s["minimum"], s["target"])
+st.subheader("成本底线与目标报价（保存时的成本快照）")
+show_costs(result, s["costs"], r["quantity"], s["minimum"], s["target"], r["currency"], r["unit"])
+with st.expander("成本来源及修改理由"):
+    st.dataframe([{"成本项": f, "原值": s["source_costs"].get(f, "无"),
+                   "本次值": s["costs"][f] or "缺失", "来源": "产品库" if i < 3 else "人工录入",
+                   "更新时间": s["source_updated"] if i < 3 else s["entered_at"]}
+                  for i, f in enumerate(COSTS)], hide_index=True)
+    st.write("修改理由：" + (s["reason"] or "未修改产品成本"))
+data = get_data()
+st.subheader("历史参考（同产品、币种、单位）")
+base = [t for t in data["历史交易"] if (t["产品ID"], t["币种"], t["单位"]) ==
+        (r["product_id"], r["currency"], r["unit"])]
+start = st.date_input("历史开始日期", value=date.fromisoformat(min((t["订单日期"] for t in base), default=date.today().isoformat())))
+end = st.date_input("历史结束日期", value=date.today())
+low = st.number_input("历史数量下限", min_value=0.0, value=0.0)
+high = st.number_input("历史数量上限", min_value=0.0, value=float(max([t["数量"] for t in base]+[r["quantity"]])))
+if start > end or low > high:
+    st.error("筛选起止范围无效。")
+    matches = []
+else:
+    matches = [t for t in base if start.isoformat() <= t["订单日期"] <= end.isoformat() and low <= t["数量"] <= high]
+st.metric("匹配交易数量", len(matches))
+if matches:
+    prices = [t["成交单价"] for t in matches]
+    st.write({label: f"{percentile(prices, q):.4f}" for label, q in [("P25", .25), ("中位数P50", .5), ("P75", .75)]})
+    st.caption("按订单等权、线性插值分位数，不按数量加权；历史参考不覆盖成本底线。")
+    if len(matches) < 10:
+        st.warning("可比交易少于10笔，样本不足，历史参考需谨慎使用。")
+    st.dataframe(matches, hide_index=True)
+else:
+    st.info("暂无历史参考")
+st.subheader("人工拟报价")
+default = "" if result["missing"] else str(result["target"].quantize(number(".01"), rounding=ROUND_CEILING))
+price = st.text_input(f"拟报价（{r['currency']}/{r['unit']}）", value=default, key=f"price_{identifier}")
+blocked = None
+try:
+    p = number(price)
+    st.metric("整单金额", f"{p*r['quantity']:.2f}")
+    if not result["missing"] and p > 0:
+        st.metric("实际毛利率", f"{(1-result['unit_cost']/p)*100:.4f}%")
+    check_price(result, price)
+    if r["status"] != "draft":
+        raise ValueError("该询价已提交或关闭，不可重复提交。")
+    if r["valid_until"] < date.today():
+        raise ValueError("报价已过有效期，禁止提交。")
+except ValueError as error:
+    blocked = str(error)
+    st.warning(blocked)
+if st.button("提交审批", disabled=blocked is not None, type="primary"):
+    try:
+        qid = submit(identifier, price)
+        st.success(f"已提交审批，报价版本编号：{qid}。等待人工审批，尚未批准。")
+    except (ValueError, DatabaseUnavailable) as error:
+        st.error(str(error))
+reminders(data, r["customer_id"], r["product_id"], r["quantity"])

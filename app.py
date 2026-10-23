@@ -31,5 +31,5 @@ pages = [
 navigation = st.navigation(pages, position="sidebar")
 with st.sidebar:
     st.caption("项目重点：价格分析与报价决策。")
-    st.caption("数据中心可查看模拟库存及客户付款表现；库存提醒待实现。")
+    st.caption("库存和付款表现仅为辅助提醒，不自动采购、授信或承诺交期。")
 navigation.run()

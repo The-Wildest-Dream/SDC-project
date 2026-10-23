@@ -74,3 +74,10 @@ operation_logs = Table(
     Column("details", JSONB, nullable=False),
     Column("created_at", DateTime(timezone=True), server_default=func.now(), nullable=False),
 )
+inquiry_details = Table(
+    "inquiry_details", metadata,
+    Column("inquiry_id", Text, ForeignKey("inquiries.id"), primary_key=True),
+    Column("delivery_date", Date, nullable=False),
+    Column("valid_until", Date, nullable=False),
+    Column("snapshot", JSONB, nullable=False),
+)
