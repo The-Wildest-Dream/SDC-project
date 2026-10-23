@@ -7,9 +7,10 @@ from workflow_service import create_draft
 from database import DatabaseUnavailable
 from quotation_rules import calculate, percentile, number, check_price, COSTS
 from quotation_ui import show_costs, reminders
+from price_model import predict_price, group_key
 
 st.header("历史价格与报价建议")
-st.caption("模拟数据 · 透明成本规则与历史统计，未训练AI模型。历史价格不是自动报价指令。")
+st.caption("模拟数据 · 成本规则、历史统计与离线训练的成交价预测分别展示，均不替代人工审批。")
 try:
     rows = list_inquiries()
 except DatabaseUnavailable as error:
@@ -59,6 +60,29 @@ if matches:
     st.dataframe(matches, hide_index=True)
 else:
     st.info("暂无历史参考")
+st.subheader("模型预测成交单价（独立辅助参考）")
+model_value, model_reason, model_meta = None, "关键单位成本缺失，不能预测；继续使用历史参考及可用成本信息。", None
+if all(s["costs"].get(f) not in ("", None) for f in COSTS[:3]):
+    # 历史“当时单位成本”口径为三项生产成本合计，不混入整批固定/物流分摊。
+    production_cost = sum(number(s["costs"][f]) for f in COSTS[:3])
+    model_value, model_reason, model_meta = predict_price(
+        r["product_id"], r["currency"], r["unit"], r["quantity"], production_cost, r["created_at"].date())
+if model_value is None:
+    st.warning("预测不可用：" + model_reason)
+else:
+    st.metric(f"模型预测价格（{r['currency']}/{r['unit']}）", f"{model_value:.4f}")
+    st.caption(model_reason)
+    if not result["missing"] and number(model_value) < result["floor"]:
+        st.warning("预测低于最低允许单价，不可据此绕过底线提交。")
+st.caption("成本底线是最低毛利率约束；历史参考是筛选交易的统计；模型预测是历史成交价估计。预测不会自动改写人工拟报价。")
+st.warning("合成数据上的指标只验证原型流程，不证明真实商业收益。")
+if model_meta:
+    with st.expander("模型版本、特征及测试集评估"):
+        st.write("训练时间：" + model_meta["trained_at_utc"])
+        st.write("数据版本：" + model_meta["data_version"])
+        st.write("输入字段：" + "、".join(model_meta["features"]))
+        st.json(model_meta["groups"].get(group_key(r["product_id"], r["currency"], r["unit"]), {}))
+        st.caption("MAE单位与本产品币种相同；基线与模型使用同一时间测试集。")
 st.subheader("人工拟报价")
 default = "" if result["missing"] else str(result["target"].quantize(number(".01"), rounding=ROUND_CEILING))
 price = st.text_input(f"拟报价（{r['currency']}/{r['unit']}）", value=default, key=f"price_{identifier}")
@@ -82,7 +106,9 @@ if st.button("保存报价草稿", type="primary"):
                      "数量下限": low, "数量上限": high, "匹配笔数": len(matches),
                      "订单ID": [t["订单ID"] for t in matches],
                      "历史价格快照": [str(t["成交单价"]) for t in matches],
-                     "口径": "同产品/币种/单位，订单等权线性插值；透明规则，非AI模型"}
+                     "口径": "同产品/币种/单位，订单等权线性插值",
+                     "模型预测": model_value, "模型说明": model_reason,
+                     "模型数据版本": model_meta["data_version"] if model_meta else None}
         qid = create_draft(identifier, price, reference, st.session_state.demo_actor)
         st.session_state.selected_quote = qid
         st.success(f"报价草稿已保存：{qid}。请到报价记录修改或提交审批。")
