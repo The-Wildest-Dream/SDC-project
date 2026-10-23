@@ -81,3 +81,16 @@ inquiry_details = Table(
     Column("valid_until", Date, nullable=False),
     Column("snapshot", JSONB, nullable=False),
 )
+quote_workflows = Table(
+    "quote_workflows", metadata,
+    Column("id", Text, primary_key=True),
+    Column("inquiry_id", Text, ForeignKey("inquiries.id"), nullable=False),
+    Column("version", Integer, nullable=False),
+    Column("owner", Text, nullable=False),
+    Column("status", Text, nullable=False),
+    Column("payload", JSONB, nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    Column("updated_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    UniqueConstraint("inquiry_id", "version"),
+    CheckConstraint("status IN ('draft','pending','approved','rejected')"),
+)

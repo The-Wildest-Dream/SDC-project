@@ -2,7 +2,8 @@ from datetime import date
 from decimal import ROUND_CEILING
 import streamlit as st
 from shared_data import get_data
-from inquiry_service import list_inquiries, submit
+from inquiry_service import list_inquiries
+from workflow_service import create_draft
 from database import DatabaseUnavailable
 from quotation_rules import calculate, percentile, number, check_price, COSTS
 from quotation_ui import show_costs, reminders
@@ -75,10 +76,17 @@ try:
 except ValueError as error:
     blocked = str(error)
     st.warning(blocked)
-if st.button("提交审批", disabled=blocked is not None, type="primary"):
+if st.button("保存报价草稿", type="primary"):
     try:
-        qid = submit(identifier, price)
-        st.success(f"已提交审批，报价版本编号：{qid}。等待人工审批，尚未批准。")
+        reference = {"筛选开始日期": str(start), "筛选结束日期": str(end),
+                     "数量下限": low, "数量上限": high, "匹配笔数": len(matches),
+                     "订单ID": [t["订单ID"] for t in matches],
+                     "历史价格快照": [str(t["成交单价"]) for t in matches],
+                     "口径": "同产品/币种/单位，订单等权线性插值；透明规则，非AI模型"}
+        qid = create_draft(identifier, price, reference, st.session_state.demo_actor)
+        st.session_state.selected_quote = qid
+        st.success(f"报价草稿已保存：{qid}。请到报价记录修改或提交审批。")
     except (ValueError, DatabaseUnavailable) as error:
         st.error(str(error))
+st.page_link("records_page.py", label="进入报价记录与下载")
 reminders(data, r["customer_id"], r["product_id"], r["quantity"])

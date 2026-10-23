@@ -42,7 +42,8 @@ except ValueError as error:
 reminders(data, customer, product, quantity)
 if st.button("保存询价草稿", type="primary", disabled=result is None):
     try:
-        identifier = save_inquiry(customer, product, quantity, delivery, expiry, costs, reason, minimum, target)
+        identifier = save_inquiry(customer, product, quantity, delivery, expiry, costs, reason, minimum, target,
+                                  actor=st.session_state.demo_actor)
         st.session_state.current_inquiry = identifier
         st.success(f"已保存询价：{identifier}")
     except (ValueError, DatabaseUnavailable) as error:
