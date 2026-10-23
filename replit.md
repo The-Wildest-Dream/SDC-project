@@ -1,6 +1,7 @@
-# [Project name]
+# 中小制造企业报价辅助系统
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+学生比赛演示用中文 Python + Streamlit 报价计算器。所有展示数据为模拟数据。第一阶段不接入数据库或机器学习。
+启动：`sh start.sh`。主要说明见 `README.md`。下方为原有模板信息，本计算器不依赖模板 API 或数据库。
 
 ## Run & Operate
 

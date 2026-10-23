@@ -1,0 +1,1 @@
+- [Streamlit 预览约束](streamlit-preview.md) — 本项目使用 Python；预览需要注册服务路由，不能仅启动普通工作流。

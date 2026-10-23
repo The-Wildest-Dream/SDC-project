@@ -1,0 +1,23 @@
+kind = "web"
+previewPath = "/"
+title = "制造企业报价辅助系统"
+description = "Python 与 Streamlit 中文报价计算器，学生比赛模拟演示。"
+version = "1.0.0"
+id = "artifacts/quotation"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23876
+
+[services.development]
+run = "sh start.sh"
+
+[services.production]
+[services.production.run]
+args = ["sh", "start.sh"]
+
+[services.env]
+PORT = "23876"
+BASE_PATH = "/"
