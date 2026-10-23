@@ -1,6 +1,7 @@
 """询价及审批提交：数据库事务和服务端规则复核。"""
 from datetime import date
 from uuid import uuid4
+import json
 from sqlalchemy import select, func
 from sqlalchemy.exc import SQLAlchemyError
 from database import engine, DatabaseUnavailable
@@ -8,7 +9,7 @@ from db_schema import inquiries, inquiry_details, tables, quote_versions, approv
 from quotation_rules import COSTS, calculate, check_price, number
 
 
-def save_inquiry(customer, product, quantity, delivery, expiry, costs, reason, minimum, target, *, actor):
+def save_inquiry(customer, product, quantity, delivery, expiry, costs, reason, minimum, target, *, actor, terms=None):
     from demo_roles import require
     require(actor, "销售人员")
     calculate(quantity, costs, minimum, target)
@@ -25,6 +26,8 @@ def save_inquiry(customer, product, quantity, delivery, expiry, costs, reason, m
                         "source_costs": {f: str(p[f]) for f in COSTS[:3]},
                         "source_updated": p["成本更新时间"].isoformat(),
                         "entered_at": date.today().isoformat()}
+            snapshot["terms"] = terms or {}
+            snapshot["terms"] = json.loads(json.dumps(snapshot["terms"], default=str))
             identifier = "INQ-" + uuid4().hex.upper()
             conn.execute(inquiries.insert().values(id=identifier, customer_id=customer, product_id=product,
                          quantity=number(quantity), unit=p["单位"], currency=p["币种"]))

@@ -94,3 +94,12 @@ quote_workflows = Table(
     UniqueConstraint("inquiry_id", "version"),
     CheckConstraint("status IN ('draft','pending','approved','rejected')"),
 )
+payment_ledger = Table(
+    "payment_ledger", metadata,
+    Column("id", Text, primary_key=True),
+    Column("order_id", Text, ForeignKey("transactions.订单ID", ondelete="RESTRICT"), nullable=False),
+    Column("payment_date", Date, nullable=False),
+    Column("amount", Numeric(), nullable=False),
+    Column("created_at", DateTime(timezone=True), server_default=func.now(), nullable=False),
+    CheckConstraint("amount > 0"),
+)

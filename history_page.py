@@ -6,6 +6,7 @@ from inquiry_service import list_inquiries
 from workflow_service import create_draft
 from database import DatabaseUnavailable
 from quotation_rules import calculate, percentile, number, check_price, COSTS
+from finance_rules import apply_funding
 from quotation_ui import show_costs, reminders
 from price_model import predict_price, group_key
 
@@ -29,6 +30,9 @@ s = r["snapshot"]
 st.write(f"产品：{s['product_name']} · 客户：{r['customer_id']} · 数量：{r['quantity']} {r['unit']} · 币种：{r['currency']}")
 st.write(f"交付日期：{r['delivery_date']} · 有效期至：{r['valid_until']} · 状态：{r['status']}")
 result = calculate(r["quantity"], s["costs"], s["minimum"], s["target"])
+terms = s.get("terms", {})
+finance = terms.get("finance")
+result = apply_funding(result, finance)
 st.subheader("成本底线与目标报价（保存时的成本快照）")
 show_costs(result, s["costs"], r["quantity"], s["minimum"], s["target"], r["currency"], r["unit"])
 with st.expander("成本来源及修改理由"):
@@ -75,6 +79,12 @@ else:
     if not result["missing"] and number(model_value) < result["floor"]:
         st.warning("预测低于最低允许单价，不可据此绕过底线提交。")
 st.caption("成本底线是最低毛利率约束；历史参考是筛选交易的统计；模型预测是历史成交价估计。预测不会自动改写人工拟报价。")
+if finance:
+    st.subheader("付款条件与综合报价参考")
+    st.write(f"预付款比例 {terms['prepayment_pct']}%，尾款账期 {terms['term_days']} 天，企业年资金成本率 {terms['annual_rate_pct']}%。")
+    st.write(f"立即付款参考报价 {finance['immediate_unit']:.4f}；当前付款条件参考报价 {finance['conditional_unit']:.4f}；差额 {finance['difference_unit']:.4f} / 单位。")
+    st.write(f"预计垫付金额 {finance['advance_amount']:.2f}；资金占用成本 {finance['funding_cost']:.2f}。费用已进入保存快照的成本底线一次，不会叠加到历史价或模型预测价。")
+    st.write(f"有效期建议至 {terms['expiry_advice']['valid_until']}；" + "；".join(terms["expiry_advice"]["reasons"]))
 st.warning("合成数据上的指标只验证原型流程，不证明真实商业收益。")
 if model_meta:
     with st.expander("模型版本、特征及测试集评估"):

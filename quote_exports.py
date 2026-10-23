@@ -8,12 +8,17 @@ from workflow_service import LABELS
 
 def fields(row):
     p = row["payload"]
+    terms = p.get("snapshot", {}).get("terms", {})
     total = "" if p["price"] in ("", None) else str(number(p["price"])*number(p["quantity"]))
     return {"编号": row["id"], "询价编号": row["inquiry_id"], "版本": str(row["version"]),
             "状态": LABELS[row["status"]] if row["status"] == "approved" else "草稿/未批准 · "+LABELS[row["status"]],
             "客户": p["customer_name"], "产品": p["product_name"], "数量": p["quantity"],
             "单位": p["unit"], "币种": p["currency"], "单价": p["price"], "总价": total,
-            "有效期": p["valid_until"], "交付日期": p["delivery_date"], "标记": "模拟演示 · 非真实交易凭证"}
+            "有效期": p["valid_until"], "交付日期": p["delivery_date"],
+            "预付款比例": terms.get("prepayment_pct", "未设置"),
+            "尾款账期天数": terms.get("term_days", "未设置"),
+            "年资金成本率": terms.get("annual_rate_pct", "未设置"),
+            "标记": "模拟演示 · 非真实交易凭证"}
 
 
 def csv_export(row):

@@ -28,6 +28,8 @@ def locked(conn, identifier):
 def validate(payload, submitting=False):
     result = calculate(payload["quantity"], payload["snapshot"]["costs"],
                        payload["snapshot"]["minimum"], payload["snapshot"]["target"])
+    from finance_rules import apply_funding
+    result = apply_funding(result, payload["snapshot"].get("terms", {}).get("finance"))
     if submitting:
         check_price(result, payload["price"])
         if date.fromisoformat(payload["valid_until"]) < date.today():
