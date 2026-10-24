@@ -230,7 +230,7 @@ Predictions may be unavailable for unsupported inputs or groups. They never over
 - [ ] **TODO — add public YouTube demo video link.**
 - [x] **[complete `SDC2026_Nameless_Preliminary.pdf`](https://ap.wps.com/cms/docs/d/cbQa3ecMjGvyOSau?platform=pc&refer=copylink).**
 - [x] **[complete `SDC2026_Nameless_TechDeclaration.pdf`.](https://ap.wps.com/cms/docs/d/cbQa3ty1YcYPrgnk?platform=pc&refer=copylink).**
-- [ ] **TODO — complete `SDC2026_Nameless_Replit_POU.pdf`.**
+- [x] **[complete `SDC2026_Nameless_Replit_POU.pdf`](https://ap.wps.com/cms/docs/d/cbQa3j02xk3t7vQi?platform=pc&refer=copylink).**
 - [ ] **TODO — confirm all required signatures and official submission steps.**
 
 ## License
