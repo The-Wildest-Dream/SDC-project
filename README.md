@@ -8,14 +8,11 @@ A Python and Streamlit demonstration application for small and medium-sized manu
 |---|---|
 | Team Name | Nameless |
 | Domain | Domain 2 |
-| SDG Track and Target | TODO — not confirmed |
+| SDG Track and Target | SDG 9 — Industry, Innovation and Infrastructure; Target 9.3 — supporting small enterprises’ integration into value chains and markets through more consistent and traceable quotation workflows. |
 | Team Leader | ZHANG XINRUI |
 | University Affiliation(s) | XIAMEN UNIVERSITY MALAYSIA |
 | Number of Members | 4 |
 
-| Name | Role and Contribution | GitHub |
-|---|---|---|
-| TODO | TODO | TODO |
 
 ## Project Links
 
@@ -160,7 +157,8 @@ The repository is configured to run the Streamlit app in a Replit workflow and d
 
 ## AI-Assisted Development and Third-Party Resources
 
-Replit Agent was used in this workspace for implementation and documentation assistance. ChatGPT and other tools: TODO — team confirmation required. Human review/sign-off of every generated or translated section: TODO — team confirmation required.
+Replit Agent was used in this workspace for implementation and documentation assistance. ChatGPT was used for requirements refinement, implementation prompts,
+technical explanations, documentation drafting and translation assistance. Replit Agent was used for application implementation, debugging. The team reviewed the generated application through staged feature checks. Final review of documentation, translations and the complete deployed workflow are also finished.
 
 Runtime dependencies are declared in `pyproject.toml` and pinned by `uv.lock`, including Streamlit, SQLAlchemy, psycopg, scikit-learn, joblib, and pandas. Their individual license notices have not been independently inventoried here; retain third-party notices and consult package metadata before redistribution.
 
