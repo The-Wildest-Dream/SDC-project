@@ -5,14 +5,49 @@ from quotation_rules import number
 
 RULE_VERSION = "PAY-EXP-1"
 
+_FINANCE_AMOUNT_FIELDS = (
+    "minimum", "target", "immediate_unit", "advance_amount", "funding_cost",
+    "funding_unit", "conditional_unit", "difference_unit",
+    "immediate_reference_total",
+)
+
+
+def normalize_finance(finance):
+    """Validate persisted or freshly calculated finance data and normalize amounts."""
+    if not isinstance(finance, dict):
+        raise ValueError("资金占用计算数据格式无效。")
+
+    missing = [field for field in _FINANCE_AMOUNT_FIELDS if field not in finance or finance[field] is None]
+    if missing:
+        raise ValueError("资金占用计算数据不完整，缺少字段：" + "、".join(missing) + "。")
+
+    normalized = dict(finance)
+    for field in _FINANCE_AMOUNT_FIELDS:
+        try:
+            normalized[field] = number(finance[field])
+        except (TypeError, ValueError):
+            raise ValueError("资金占用计算字段无效：" + field + "。") from None
+
+    if normalized["minimum"] > normalized["target"] or normalized["target"] >= 100:
+        raise ValueError("资金占用计算中的最低毛利率和目标毛利率无效。")
+    return normalized
+
 
 def apply_funding(result, finance):
-    if result["missing"] or not finance:
+    if finance is None:
         return result
+    finance = normalize_finance(finance)
+    if result.get("missing"):
+        return result
+    try:
+        base_unit_cost = number(result["unit_cost"])
+    except (KeyError, TypeError, ValueError):
+        raise ValueError("资金占用计算所需的基础单位成本缺失或无效。") from None
+
     adjusted = dict(result)
-    adjusted["unit_cost"] = result["unit_cost"] + finance["funding_unit"]
-    adjusted["floor"] = adjusted["unit_cost"]/(1-number(finance["minimum"])/100)
-    adjusted["target"] = adjusted["unit_cost"]/(1-number(finance["target"])/100)
+    adjusted["unit_cost"] = base_unit_cost + finance["funding_unit"]
+    adjusted["floor"] = adjusted["unit_cost"]/(1-finance["minimum"]/100)
+    adjusted["target"] = adjusted["unit_cost"]/(1-finance["target"]/100)
     adjusted["funding_cost"] = finance["funding_cost"]
     return adjusted
 

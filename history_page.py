@@ -54,7 +54,11 @@ st.write(t(
 result = calculate(r["quantity"], s["costs"], s["minimum"], s["target"])
 terms = s.get("terms", {})
 finance = terms.get("finance")
-result = apply_funding(result, finance)
+try:
+    result = apply_funding(result, finance)
+except ValueError as error:
+    st.error(display_error(error))
+    st.stop()
 st.subheader(t("history.base"))
 show_costs(result, s["costs"], r["quantity"], s["minimum"], s["target"], r["currency"], r["unit"])
 with st.expander(t("history.cost_sources")):

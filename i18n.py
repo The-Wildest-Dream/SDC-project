@@ -149,6 +149,9 @@ ERROR_KEYS = {
     "目标毛利率必须大于或等于 0%，且小于 100%。": "error.target_margin_range",
     "各项成本和费用不能为负数。": "error.negative_cost",
     "只能修改或提交自己的草稿。": "error.own_draft_only",
+    "资金占用计算数据格式无效。": "error.finance_invalid_data",
+    "资金占用计算所需的基础单位成本缺失或无效。": "error.finance_base_cost",
+    "资金占用计算中的最低毛利率和目标毛利率无效。": "error.finance_margin_invalid",
 }
 
 
@@ -364,6 +367,14 @@ def display_text(value):
 def display_error(error):
     """Translate known business errors; never leak an untranslated backend string."""
     message = str(error)
+    if message.startswith("资金占用计算数据不完整，缺少字段："):
+        fields = message.removeprefix("资金占用计算数据不完整，缺少字段：").rstrip("。").split("、")
+        return t("error.finance_missing", fields="、".join(
+            t(_JSON_KEYS.get(field, "finance.title")) for field in fields
+        ))
+    if message.startswith("资金占用计算字段无效："):
+        field = message.removeprefix("资金占用计算字段无效：").rstrip("。")
+        return t("error.finance_field_invalid", field=t(_JSON_KEYS.get(field, "finance.title")))
     if message.startswith("关键成本缺失，禁止提交审批："):
         names = message.split("：", 1)[1]
         return t("error.missing_costs", fields="、".join(field_label(x) for x in names.split("、")))
