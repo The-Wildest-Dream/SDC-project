@@ -263,7 +263,11 @@ Predictions may be unavailable for unsupported product/currency/unit combination
 **Proof of Use:** **TODO — create and link** `submission/SDC2026_Nameless_Replit_POU.pdf`, including development/hosting evidence and screenshots with credentials redacted.
 
 ## How We Use RunPod (Required)
-
+- **Endpoint Name:** SDC-project
+- **Endpoint ID:** `4qbw60i5ghyhfo`
+- **Endpoint URL:** https://api.runpod.ai/v2/4qbw60i5ghyhfo
+- **Endpoint Type:** Queue-based Serverless
+- **Compute:** CPU
 ### Workload
 
 RunPod Serverless hosts **CPU-based inference** for the existing historical transaction-price model. It loads the trusted `models/historical_price/model.joblib` artifact and reuses the project's prediction logic. The worker does **not** retrain the model, implement a second pricing algorithm, or connect to the application database.
