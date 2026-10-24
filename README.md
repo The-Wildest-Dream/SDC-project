@@ -134,6 +134,7 @@ Requires Python 3.13, `uv`, and a development PostgreSQL database.
 git clone https://github.com/The-Wildest-Dream/SDC-project.git
 cd SDC-project
 uv sync --frozen
+source .venv/bin/activate
 ```
 
 Set `DATABASE_URL`, `RUNPOD_API_KEY`, and `RUNPOD_ENDPOINT_ID` in the runtime environment. For a new **development** database:
@@ -162,7 +163,7 @@ Database and workflow verification scripts are also provided: `verify_database.p
 - **Data and configuration:** PostgreSQL connects through `DATABASE_URL`; sensitive credentials are managed through Replit Secrets.
 - **Integration:** The historical-price page uses `runpod_client.py` to request remote predictions.
 
-**Proof of Use:** **[ `SDC2026_Nameless_Replit_POU.pdf`](https://www.image2url.com/r2/default/documents/1792836875707-943318e8-ad85-4550-96af-9fbc836b65a6.pdf)**
+**Proof of Use:** **[ `SDC2026_Nameless_Replit_POU.pdf`](submission/SDC2026_Nameless_Replit_POU.pdf)**
 
 ## How We Use RunPod (Required)
 
@@ -190,7 +191,7 @@ Example request body:
 
 The model runs on CPU because the current scikit-learn inference workload does not require GPU acceleration. **If the competition separately mandates GPU usage, organizer confirmation is needed.**
 
-**Proof of Use:** [**SDC2026_Nameless_Runpod_POU.pdf**](https://www.image2url.com/r2/default/documents/1792836931384-cb441cbc-57a0-43be-ba7e-fda4d20925ab.pdf)
+**Proof of Use:** [**SDC2026_Nameless_Runpod_POU.pdf**](submission/SDC2026_Nameless_Runpod_POU.pdf)
 
 ## Model Evaluation and Limitations
 
@@ -237,8 +238,8 @@ Predictions may be unavailable for unsupported inputs or groups. They never over
 - [x] Replit and RunPod usage described.
 - [x] Apache License 2.0 included.
 - [x] Add public YouTube demo video link.
-- [x] **[complete `SDC2026_Nameless_Preliminary.pdf`](https://www.image2url.com/r2/default/documents/1792836815999-e2449e55-df2e-474f-9796-a8939b0a4e51.pdf).**
-- [x] **[complete `SDC2026_Nameless_TechDeclaration.pdf`.](https://www.image2url.com/r2/default/documents/1792836970315-62fb5192-5959-4d0d-96ca-14456f5fb2ac.pdf).**
+- [x] **[complete `SDC2026_Nameless_Preliminary.pdf`](submission/SDC2026_Nameless_Preliminary.pdf).**
+- [x] **[complete `SDC2026_Nameless_TechDeclaration.pdf`.](submission/SDC2026_Nameless_TechDeclaration.pdf).**
 - [x] Confirm all required signatures and official submission steps.
 
 ## License
