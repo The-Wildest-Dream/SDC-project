@@ -188,7 +188,7 @@ Example request body:
 
 The model runs on CPU because the current scikit-learn inference workload does not require GPU acceleration. **If the competition separately mandates GPU usage, organizer confirmation is needed.**
 
-**Proof of Use:** **TODO — attach `SDC2026_Nameless_Runpod_POU.pdf` with endpoint/build/request evidence and redacted credentials.**
+**Proof of Use:** [**SDC2026_Nameless_Runpod_POU.pdf**](https://ap.wps.com/cms/docs/d/cbQa3cAId11iuzP3?platform=pc&refer=copylink)
 
 ## Model Evaluation and Limitations
 
@@ -230,10 +230,9 @@ Based on the [official SDC Hackathon submission template](https://github.com/mic
 - [x] Replit and RunPod usage described.
 - [x] Apache License 2.0 included.
 - [ ] **TODO — add public YouTube demo video link.**
-- [ ] **TODO — complete `SDC2026_Nameless_Preliminary.pdf`.**
-- [ ] **TODO — complete `SDC2026_Nameless_TechDeclaration.pdf`.**
+- [x] **[complete `SDC2026_Nameless_Preliminary.pdf`](https://ap.wps.com/cms/docs/d/cbQa3ecMjGvyOSau?platform=pc&refer=copylink).**
+- [x] **[complete `SDC2026_Nameless_TechDeclaration.pdf`.](https://ap.wps.com/cms/docs/d/cbQa3ty1YcYPrgnk?platform=pc&refer=copylink).**
 - [ ] **TODO — complete `SDC2026_Nameless_Replit_POU.pdf`.**
-- [ ] **TODO — complete `SDC2026_Nameless_Runpod_POU.pdf`.**
 - [ ] **TODO — confirm all required signatures and official submission steps.**
 
 Official submission forms: [SDC submission documents and templates](https://drive.google.com/drive/folders/1xw7c2aN8N-at8hPEULzkcU76e_FFb0Ef).
