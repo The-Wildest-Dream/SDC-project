@@ -1,4 +1,4 @@
-"""未实现页面的统一展示，不提供虚构数据或无效操作。"""
+"""Shared display for unimplemented pages; do not show fabricated data or nonfunctional actions."""
 import streamlit as st
 
 

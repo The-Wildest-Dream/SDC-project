@@ -1,4 +1,4 @@
-"""CPU独立训练：python train_price_model.py；网页不会调用训练。"""
+"""Train offline on CPU with `python train_price_model.py`; the web app never triggers training."""
 import hashlib
 import json
 import os
@@ -16,7 +16,7 @@ from price_model import MODEL_DIR, FEATURES, features, group_key
 
 
 def train():
-    # 唯一数据来源为本项目固定种子的合成交易，不接收真实交易或付款数据。
+    # Use only this project's fixed-seed synthetic transactions, never real transactions or payment data.
     rows = sorted(generate()["历史交易"], key=lambda r: (r["订单日期"], r["订单ID"]))
     data_hash = hashlib.sha256(json.dumps(rows, ensure_ascii=False, sort_keys=True).encode()).hexdigest()
     cutoff = rows[int(len(rows)*.8)]["订单日期"]
@@ -60,7 +60,7 @@ def train():
                        for f in ("quantity", "historical_unit_cost")},
         }
     MODEL_DIR.mkdir(parents=True, exist_ok=True)
-    # 单文件模型含完整元数据，原子替换，避免页面读取半个模型。
+    # Atomically replace the model bundle so the app cannot read a partial artifact.
     temp = MODEL_DIR / "model.tmp"
     joblib.dump({"models": models, "metadata": metadata}, temp)
     os.replace(temp, MODEL_DIR / "model.joblib")

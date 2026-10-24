@@ -1,4 +1,4 @@
-"""付款资金成本、日期截断客户付款分析与规则型报价有效期建议。"""
+"""Payment financing cost, cutoff-based payment analysis, and rule-based quote validity."""
 from datetime import date
 from decimal import Decimal
 from quotation_rules import number
@@ -18,7 +18,7 @@ def apply_funding(result, finance):
 
 
 def funding(base_cost, quantity, minimum, margin, prepayment_pct, term_days, annual_rate):
-    """用无资金费用的立即付款总价估算预收款；不循环使用延期报价。"""
+    """Estimate the advance using the immediate-payment total; do not create a circular quote."""
     cost, q = number(base_cost), number(quantity)
     low, m, advance_pct, rate = map(number, (minimum, margin, prepayment_pct, annual_rate))
     days = int(term_days)
@@ -72,7 +72,7 @@ def expiry_advice(as_of, cost_updated, default_days=7, max_days=30,
 
 
 def ledger_summary(bundle, ledger, customer_id, as_of, sample_min=10):
-    """到期以合同付款日计算。分笔付款按订单累积；分析日之后的流水完全忽略。"""
+    """Use contractual due dates and aggregate installments; exclude payments after the cutoff."""
     orders = [r for r in bundle["历史交易"] if r["客户ID"] == customer_id
               and r["订单日期"] <= as_of.isoformat()]
     detail, due_count, on_time = [], 0, 0
@@ -87,7 +87,7 @@ def ledger_summary(bundle, ledger, customer_id, as_of, sample_min=10):
             paid = sum((Decimal(str(x["金额"])) for x in rows), Decimal(0))
             paid_by = max((x["付款日期"] for x in rows if Decimal(str(x["金额"])) > 0), default="")
         else:
-            # 兼容旧数据：实际付款日期代表单次整笔结清，只用于原本无流水的历史单。
+            # Legacy compatibility: the old paid date represents one full settlement only when no ledger rows exist.
             paid_by = o.get("实际付款日期", "") if o.get("实际付款日期", "") <= as_of.isoformat() else ""
             paid = amount if paid_by else Decimal(0)
         balance = max(Decimal(0), amount-paid)

@@ -1,4 +1,4 @@
-"""应用入口：公共说明与侧边栏导航。"""
+"""Streamlit application entry point, shared notices, and sidebar navigation."""
 from functools import partial
 
 import streamlit as st

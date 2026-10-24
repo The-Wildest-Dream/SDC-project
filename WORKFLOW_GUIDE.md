@@ -1,67 +1,38 @@
-# 模拟报价审批工作流
+# Demonstration Quote Approval Workflow
 
-所有数据及角色用于比赛演示。侧边栏销售甲/销售乙均为“销售人员”，经理为“经理”。
-角色可随意切换，不是真实身份认证，不是生产级权限系统。切勿用于真实授权或敏感业务。
-后端函数校验传入的模拟角色、销售归属及报价状态；不是仅隐藏按钮。
+All data and roles are for a competition demonstration. Sales A and Sales B map to the simulated Sales role; Manager maps to the simulated Manager role. The selector is not identity authentication or production-grade access control. Backend business functions validate the supplied demo role, ownership, and quote state; this does not make the demo suitable for real authorization or sensitive business.
 
-## 操作流程
+## Workflow
 
-1. 切换销售甲，进入新建询价，填写并保存。
-2. 历史价格页自动选择询价，调整拟价，点击“保存报价草稿”。
-3. 报价记录页查看新草稿，可修改数量、交付日期、有效期、成本、修改理由、
-   最低/目标毛利率及人工拟报价，再点击“提交审批”。
-4. 切换经理，在审批中心选择该编号，填写必填意见，批准或驳回。
-5. 报价记录按客户、产品、创建日期（含起止日）和状态筛选，查看版本、成本、
-   参考依据快照、审批和操作时间，下载CSV或可打印HTML。
-6. 销售甲选中自己最新的已批准/已驳回版本，创建修改版本。新版本为草稿，
-   修改后须重新提交审批；旧版本不变。待审批版本不能直接修改。
+1. Select Sales A and create/save an inquiry.
+2. Open Historical Prices, review available cost and price references, enter a manual quote, and save the quote draft.
+3. In Quote Records, the owning sales role can edit its own draft: quantity, delivery date, validity, costs, margin settings, and manual price. A reason is required when changing costs. Submit the saved draft for approval.
+4. Switch to Manager. Select the pending version in Approvals, enter a required review comment, and approve or reject.
+5. Return to Quote Records. Filter by customer, product, creation date, and state; inspect versions, cost/reference snapshots, comments, and timestamps. Download CSV or printable HTML.
+6. The owning sales role can create a new version from an approved/rejected version. The prior version remains unchanged; the new draft must be submitted and approved again. Pending versions cannot be edited.
 
-每次审批与审批日志、操作日志在同一数据库事务完成；行锁保护状态转换。
-重复提交/审批/从同一旧版本重复创建新版本会被明确拒绝。
-只有经理可以审批，销售只能修改、提交自己的草稿；销售乙无法修改销售甲草稿。
-缺关键成本、低于最低单价、过期报价仍无法提交。
+State changes, approval records, and operation logs are written in one transaction. Row locks protect state transitions. Repeated submission, approval, or creating another revision from a stale version is rejected.
 
-## 快照与导出
+## Saved Snapshots and Exports
 
-报价快照保存客户/产品名称、数量、币种、单位、有效期、成本来源及成本输入、
-拟报价、历史筛选条件、匹配订单ID与成交价格。后续产品/客户数据变更不会
-改变保存的版本或下载内容。历史统计仅作参考，不训练或宣称使用AI模型。
-修改版本继承原参考依据，明确记录继承来源，不伪称重新获取了最新历史数据。
+Each submitted quote version preserves its saved names, quantity, unit, currency, validity, cost source/input, manual price, reference basis, and available model/prediction details. Inquiry payment-term and validity inputs are stored in the inquiry snapshot and copied into the quote payload. Later master-data updates do not rewrite saved quote versions.
 
-CSV与HTML包含编号、版本、客户、产品、数量、单位、币种、单价、总价、
-有效期及模拟演示标记。非批准版本显著标注“草稿/未批准”，不得冒充已批准报价。
-HTML使用浏览器打印菜单或Ctrl+P/Cmd+P；内容已转义，CSV防电子表格公式注入。
-导出是所选版本的保存快照，不使用当前未保存的编辑框内容。
+The CSV and HTML exports include quote and inquiry identifiers, version, status, customer, product, quantity, unit, currency, unit price, total, validity, delivery date, payment-term fields when present, and a demo notice. Unapproved versions are marked as draft/not approved. HTML output escapes displayed values; CSV output guards spreadsheet formulas. Export content comes from the selected saved version, not unsaved form values.
 
-## 数据结构与旧数据
+## Data and Legacy Compatibility
 
-quote_workflows保存版本状态、所属模拟销售和完整快照，按询价+版本唯一。
-提交时向quote_versions写入不可修改的金额/成本快照，审批意见写入approval_records。
-原inquiries.status为旧询价生命周期，不用于展示报价四状态；以quote_workflows为准。
+`quote_workflows` stores owner, state, version, and quote payload; the inquiry/version pair is unique. On submission, `quote_versions` stores the immutable price/cost snapshot. Approval comments and decisions are stored in `approval_records`. The legacy `inquiries.status` represents inquiry lifecycle; the four quote states are stored in `quote_workflows`.
 
-开发环境：
-```
-python db_manage.py init
-python migrate_legacy_quotes.py
-```
-不删除原报价。旧版未设销售归属的数据明确归为演示销售甲；
-旧版未记录历史依据不补造，迁移时显示缺失说明。重复执行不覆盖已迁移版本。
-这些命令不放在生产启动流程中。
+In a development environment, `python db_manage.py init` creates missing tables. `python migrate_legacy_quotes.py` is a separate compatibility helper for pre-existing quotes. It preserves old quote rows, assigns legacy rows to the simulated Sales A owner when no owner existed, and does not invent missing historical reference data. These are not production migration commands.
 
-## 工作台
+## Dashboard
 
-待审批数量来自数据库全部待审批版本；近期报价为最近10个版本。
-库存提醒按每份询价的最新非驳回报价逐单比较需求与现有-预留，
-不将不同版本重复累计，不汇总承诺库存，不自动采购或承诺交期。
-没有报价或提醒时显示明确空状态。
+The dashboard counts pending quote versions from the database and displays the latest 10 versions. Inventory checks compare the latest non-rejected version per inquiry against on-hand minus reserved stock. They do not aggregate different quote versions, promise inventory, trigger purchases, or commit to a delivery date. Empty states are displayed when no records or warnings exist.
 
-## 主要文件及验证
+## Main Modules
 
-- demo_roles.py：模拟角色/所有权校验。
-- workflow_service.py：版本保存、修改、提交、审批、新版本事务。
-- records_page.py / approval_page.py / dashboard_page.py：三个页面。
-- quote_exports.py：安全CSV和可打印HTML。
-- verify_workflow.py：开发数据库角色、状态、回滚、重复操作、版本保留及导出验证；
-  会留下明确标注自动校验的模拟记录。
-
-本说明替代QUOTATION_GUIDE.md中“直接从历史页提交”和“审批中心尚未实现”的旧流程。
+- `demo_roles.py`: simulated role and ownership checks.
+- `workflow_service.py`: quote version, draft, submission, approval, and revision transactions.
+- `records_page.py`, `approval_page.py`, `dashboard_page.py`: quote records, approval, and dashboard pages.
+- `quote_exports.py`: CSV and printable HTML export.
+- `verify_workflow.py`: development database workflow verification; it creates synthetic test quote records and leaves them in the database.

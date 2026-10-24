@@ -1,4 +1,4 @@
-"""固定种子合成数据。运行 python generate_data.py 可重新生成示例 CSV。"""
+"""Generate fixed-seed synthetic data; run `python generate_data.py` to recreate example CSV files."""
 import random
 from datetime import date, timedelta
 from pathlib import Path
@@ -24,7 +24,7 @@ def generate():
     orders = []
     for i in range(300):
         p = rng.choice(products)
-        # 最后一个客户只分配三笔，以演示小样本提示。
+        # Assign only three transactions to the last customer to demonstrate the small-sample notice.
         c = customers[-1] if i < 3 else rng.choice(customers[:-1])
         day = date(2025, 10, 24) + timedelta(days=rng.randrange(365))
         due = day + timedelta(days=rng.choice([15, 30, 45, 60]))

@@ -1,4 +1,4 @@
-"""合成订单的分笔付款流水追加、读取与日期截断分析。"""
+"""Append and read synthetic-order payment installments and analyze them at a date cutoff."""
 import csv
 import io
 from datetime import date
@@ -49,10 +49,10 @@ def import_ledger(content):
     if issues: return issues
     try:
         with engine().begin() as conn:
-            # 导入流水为追加操作；同一订单允许多次付款，按CSV每行建立独立流水。
+            # Ledger imports append rows; one order may have multiple installments.
             for row in rows:
                 conn.execute(payment_ledger.insert().values(id=str(uuid4()), **row))
-            # 整单累计付款不得超过成交总额（已有旧付款日期视为旧流水基线）。
+            # Total installments cannot exceed the transaction amount; a legacy paid date is a full-settlement baseline.
             for oid in {r["order_id"] for r in rows}:
                 order = orders[oid]
                 total = Decimal(str(order["成交单价"]))*Decimal(str(order["数量"]))

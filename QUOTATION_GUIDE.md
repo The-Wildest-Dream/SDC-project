@@ -1,55 +1,48 @@
-# 询价与历史价格：模拟数据操作说明
+# Inquiry, Costing, and Historical Price Guidance
 
-新建询价选择客户、产品，录入数量、交付日期和有效期截止日。
-三项单位成本从产品库读取，固定费用和卖方物流由人工填写。
-修改或清空产品成本必须写理由；空白表示未知，0表示已确认零费用。
-五项成本任一缺失仍可保存草稿，但禁止提交审批。
-数量允许正小数，最低毛利率与目标毛利率满足0≤最低≤目标<100%。
+Create an inquiry by selecting a customer and product, then entering quantity, delivery date, and quote-validity date. Product master data prefills the three unit production costs. Batch fixed costs and seller-paid batch logistics are entered for the inquiry. Changing or clearing product costs requires a reason; blank means unknown, while zero means a confirmed zero cost. Missing any of the five costs allows a draft inquiry but prevents approval submission. Quantity may be a positive decimal. Margin settings must satisfy `0 ≤ minimum margin ≤ target margin < 100%`.
 
-点击保存会创建唯一INQ编号，并将客户、产品、数量、单位、币种、
-交期、有效期、成本快照、来源更新日期和修改理由保存到数据库。
-每次点击保存创建新询价，不覆盖原询价。历史页自动选择刚保存的询价；
-重启后可从询价列表重新选择。当前页选择ID属于页面状态，不是业务缓存。
+Saving creates a unique `INQ` identifier and stores customer/product references, quantity, unit, currency, delivery date, validity, cost snapshot, source update date, and any supplied inquiry settings. Saving again creates a new inquiry rather than replacing the prior one. The Historical Prices page selects the latest saved inquiry in the current session; persisted inquiries can be selected again after restarting.
 
-## 计算及历史口径
+## Cost and Price Calculations
 
-单位成本 = 材料 + 人工 + 制造 + (固定费用 + 卖方整批物流) / 数量。
-目标报价 = 单位成本 / (1 - 目标毛利率 / 100)。
-最低允许单价 = 单位成本 / (1 - 最低毛利率 / 100)。
-所有计算使用Decimal，不提前舍入；默认拟报价将目标价向上取到分。
-人工拟报价实时计算毛利率=(拟报价-单位成本)/拟报价、总额=拟报价×数量。
+Base unit cost is:
 
-历史仅筛选同产品ID、币种、单位；日期及数量上下限均包含边界。
-显示订单笔数、P25/P50/P75（订单等权、线性插值），不足10笔提示样本不足。
-没有匹配记录显示“暂无历史参考”，不会阻止有效成本计算和合规报价提交。
-历史参考不覆盖成本底线；这里使用透明规则与统计，没有训练AI模型。
+`material + labor + manufacturing overhead + (batch fixed cost + seller-paid batch logistics) / quantity`
 
-## 提交与辅助提醒
+Target reference price is `unit cost / (1 - target margin / 100)`.
+Minimum permitted unit price is `unit cost / (1 - minimum margin / 100)`.
 
-提交时服务端从数据库重新读取成本快照、复算底线，拒绝缺成本、
-零拟报价、低于底线、已过有效期、重复提交的询价。
-同一事务写报价版本、submitted审批记录、询价状态和操作日志。
-“提交成功”不表示获批；审批中心通过/驳回处理仍待实现。
-数据库锁阻止并发重复提交，失败整批回滚。
+Calculations use Python `Decimal` and do not round intermediate values. The default suggested price rounds the target price upward to the nearest cent. The manual proposed price displays its implied gross margin and order total.
 
-库存=现有-预留，超量仅提醒，不自动采购或承诺交期。
-付款摘要按系统当天日终统计，明确样本不足；不作诚信判断或自动信用决策。
+Historical transactions are filtered by exact product ID, currency, and unit. Date and quantity bounds include endpoints. The page displays transaction count and P25/P50/P75 using an unweighted, linearly interpolated percentile. Fewer than 10 matches prompts a small-sample caution. No matches show a no-reference message without hiding available cost calculations.
 
-## 文件与数据结构
+The separate model reference predicts historical transaction price; it does not replace cost calculations or manual pricing. See [MODEL_GUIDE.md](MODEL_GUIDE.md). Historical transaction prices may already reflect their original payment terms. The current calculation does not add a payment premium to the historical or predicted price a second time.
 
-- quotation_rules.py：独立金额及分位数计算。
-- inquiry_service.py：保存询价、读取询价、事务提交与服务端拦截。
-- quotation_ui.py：成本过程及辅助提醒展示。
-- quote_page.py / history_page.py：两个页面。
-- inquiry_details：新增扩展表，与inquiries一对一，保存交期、有效期和JSONB成本来源快照。
-  原数据表不删除、不重建。开发环境用 python db_manage.py init 创建缺失表。
-- tests/test_quotation_rules.py：底线、缺成本、毛利率和分位数回归测试。
+## Payment-Term and Validity Inputs
 
-## 验证步骤
+The inquiry form contains demonstration fields for advance-payment percentage, balance term, annual cost-of-funds rate, default/maximum validity, stale-cost threshold, material-price movement, supplier quote expiry, and an optional customer-overdue validity policy toggle. These are per-inquiry interface inputs; a durable manager-maintained company-policy screen is not implemented.
 
-1. 正常填写并保存，检查唯一编号，进入历史页确认客户、产品、数量一致。
-2. 清空材料成本并填写理由，保存草稿：历史页缺成本提醒，提交禁用。
-3. 修改成本但不填写理由：保存时显示错误。
-4. 历史日期范围选到无交易的日期：显示暂无历史参考，成本仍显示。
-5. 拟报价设到成本底线以下：提示原因并禁用提交；调高后即时更新毛利率及总额。
-6. 合规提交后刷新：状态为submitted，不允许重复提交。
+The financing helper estimates a single balance collection. It estimates cash advanced as the greater of zero and base batch cost minus the immediate-payment reference total multiplied by the advance percentage. It then computes `estimated cash advanced × annual cost-of-funds rate × balance-term days / 365`. The estimate assumes production cost is funded in one amount at delivery and the advance uses the immediate-payment reference total. It is not the accounts receivable balance. The financing charge is included once in the saved finance-adjusted cost floor; it is not added again to the historical-price or model references. These are simplified demonstration assumptions, not a staged cash-flow forecast.
+
+Validity guidance uses the selected cost update date, optional material-price movement, optional supplier expiry, and the entered demonstration thresholds. Missing information is explained and the default validity is used. Customer overdue status only influences validity when the explicit toggle is enabled; otherwise it is only a manager-review signal. The suggestion does not claim an AI conclusion.
+
+The current customer payment summary is based on synthetic whole-order payment dates. `payment_ledger` and service code are present, but partial-payment entry/reporting is not fully integrated into the UI.
+
+## Saving and Approval
+
+The quote workflow saves a draft snapshot before submission. Submission revalidates the saved cost floor and state in the backend; it rejects missing costs, non-positive or below-floor price, expired validity, and repeated submission. “Submitted” means awaiting review, not approved. See [WORKFLOW_GUIDE.md](WORKFLOW_GUIDE.md) for the simulated-role approval lifecycle.
+
+## Key Files
+
+- `quotation_rules.py`: Decimal-based costs, margins, validation, and percentiles.
+- `finance_rules.py`: demonstration funding-cost and validity rules.
+- `inquiry_service.py`: inquiry persistence and source-cost snapshot.
+- `workflow_service.py`: quote version, role/state validation, submission, and approval transactions.
+- `quotation_ui.py`: cost explanation and supplementary reminders.
+- `quote_page.py`, `history_page.py`: inquiry and historical-analysis pages.
+- `inquiry_details`: one-to-one inquiry extension containing dates and JSONB snapshot.
+
+## Checks
+
+Use `python -m unittest discover -s tests -v` for pure logic tests. Manual inquiry and approval checks require the development database and Streamlit interface. Do not treat a unit test as evidence that an external deployment has been tested.

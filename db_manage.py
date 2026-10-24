@@ -1,4 +1,4 @@
-"""安全运维命令：不打印连接字符串或底层数据库异常。"""
+"""Safe database operations that do not print connection strings or raw database errors."""
 import argparse
 import sys
 

@@ -1,4 +1,4 @@
-"""纯 Python 数据契约、CSV 校验及付款口径；不依赖页面或数据库。"""
+"""Pure Python data contracts, CSV validation, and payment-summary rules."""
 import csv
 import io
 import math
@@ -24,7 +24,7 @@ def csv_bytes(kind, rows):
 
 
 def parse_csv(kind, content):
-    """返回规范化记录及错误；行号为 CSV 物理起始行，表头为第 1 行。"""
+    """Return normalized records and errors; row numbers refer to physical CSV lines."""
     errors, rows = [], []
 
     def error(line, field, reason):
@@ -90,7 +90,7 @@ def parse_csv(kind, content):
 
 
 def validate_bundle(bundle):
-    """检查外键和跨表约束，包含旧表对新主数据的引用。"""
+    """Check foreign keys and cross-table constraints, including legacy references."""
     errors = []
     products = {r["产品ID"]: r for r in bundle["产品"]}
     customers = {r["客户ID"]: r for r in bundle["客户"]}
@@ -123,7 +123,7 @@ def validate_bundle(bundle):
 
 
 def prepare_import(current, uploads):
-    """整批原子校验：任一错误返回 None，不修改 current。"""
+    """Validate a batch atomically; on any error, return None without changing current."""
     candidate = {k: [dict(r) for r in v] for k, v in current.items()}
     errors = []
     for kind, content in uploads.items():
@@ -146,7 +146,7 @@ def comparable_transactions(bundle, product_id):
 
 
 def payment_summary(bundle, as_of):
-    """统计截至 as_of 日终；未来付款在该时点视为尚未付款。"""
+    """Summarize through the end of as_of; later payments count as unpaid at that cutoff."""
     cutoff = as_of.isoformat()
     summaries, details = [], []
     for customer in bundle["客户"]:

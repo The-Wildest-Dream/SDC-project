@@ -1,46 +1,29 @@
-# 中小制造企业报价辅助系统
+# SME Manufacturing Quotation Assistant
 
-学生比赛演示用中文 Python + Streamlit 报价系统。所有展示数据为模拟数据。已接入SQLAlchemy + psycopg 3与Replit内置PostgreSQL，不使用机器学习。
-启动：`sh start.sh`。数据库运维见 `DATABASE_GUIDE.md`。下方为原有模板信息，本系统不依赖模板API或Drizzle；不要用模板空schema推送覆盖Python业务表。
+This is a Python + Streamlit competition demo using synthetic data. It uses SQLAlchemy, psycopg 3, and PostgreSQL. The historical transaction-price model is trained offline; the app does not train it at startup.
 
-## Run & Operate
+Run the app with `sh start.sh`. See `DATABASE_GUIDE.md` for database operations. The repository contains pnpm/Drizzle template components, but the quotation business schema is defined in Python; do not push the empty template schema over the application tables.
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+## Runtime
 
-## Stack
+- Main application: Streamlit, `app.py`, launched by `start.sh`.
+- Required runtime environment variable: `DATABASE_URL`.
+- Python database access: SQLAlchemy with the `postgresql+psycopg` driver.
+- Model training: `python train_price_model.py`; this is an explicit offline command.
+- Development database commands: `python db_manage.py check|init|seed|counts`.
 
-- pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+## Source Map
 
-## Where things live
+- `*_page.py`: Streamlit page modules.
+- `data_service.py`, `quotation_rules.py`, `finance_rules.py`: validation and business calculations.
+- `database.py`, `db_schema.py`, `workflow_service.py`: persistence and quote workflow.
+- `models/historical_price/`: generated model/evaluation artifacts.
+- `locales/`: static UI translations. Keep machine fields, internal state codes, and user-entered text unchanged.
+- `DATA_GUIDE.md`, `DATABASE_GUIDE.md`, `MODEL_GUIDE.md`, `QUOTATION_GUIDE.md`, `WORKFLOW_GUIDE.md`: maintained technical guides.
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+## Product Constraints
 
-## Architecture decisions
-
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
-
-## Product
-
-_Describe the high-level user-facing capabilities of this app once they exist._
-
-## User preferences
-
-_Populate as you build — explicit user instructions worth remembering across sessions._
-
-## Gotchas
-
-_Populate as you build — sharp edges, "always run X before Y" rules._
-
-## Pointers
-
-- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
+- All demo data and selectable roles are synthetic; the role switch is not authentication.
+- Price/cost decisions and approval must remain human-reviewed; stock/payment summaries are advisory.
+- Preserve database field names and imported CSV headers.
+- Never log or document database credentials. Do not use the unused template database tooling for Python business tables.

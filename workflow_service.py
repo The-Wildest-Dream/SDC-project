@@ -1,4 +1,4 @@
-"""模拟角色及报价状态的服务端校验；行锁和事务保护审批。"""
+"""Server-side demo-role and quote-state checks; row locks and transactions protect approvals."""
 from copy import deepcopy
 from datetime import date
 from uuid import uuid4

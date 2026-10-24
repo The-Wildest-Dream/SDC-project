@@ -1,4 +1,4 @@
-"""数据中心：模拟数据查看、CSV 下载、原子校验导入与付款汇总。"""
+"""Data Center: synthetic data browsing, CSV validation/import, and payment summaries."""
 import streamlit as st
 
 from data_service import SCHEMAS, csv_bytes, payment_summary

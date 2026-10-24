@@ -1,4 +1,4 @@
-"""仅演示身份，不是真实认证或生产权限。"""
+"""Demonstration roles only; these are not real authentication or production permissions."""
 ACTORS = {"销售甲": "销售人员", "销售乙": "销售人员", "经理": "经理"}
 
 

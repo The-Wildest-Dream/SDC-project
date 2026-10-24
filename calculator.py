@@ -1,4 +1,4 @@
-"""报价计算逻辑：所有金额以人民币元为单位。"""
+"""Quotation calculations; monetary values are expressed in yuan."""
 from decimal import Decimal
 
 

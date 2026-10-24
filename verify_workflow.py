@@ -1,4 +1,4 @@
-"""开发数据库模拟流程验证；保留标记为自动校验的演示记录。"""
+"""Verify the simulated workflow on a development database; generated test quotes remain as demo records."""
 from datetime import date, timedelta
 from copy import deepcopy
 from sqlalchemy import event

@@ -1,70 +1,50 @@
-# 数据中心：模拟数据使用说明
+# Synthetic Data Guide
 
-所有数据均由团队代码合成，不代表真实企业或客户。
-有效业务数据存入PostgreSQL，各页面及会话共享；刷新或重启后重新读取。
-初始化与数据库导入规则见 `DATABASE_GUIDE.md`。
+All generated records are synthetic and do not represent real companies or customers. Valid business data is stored in PostgreSQL and read from the database after page navigation or an application restart. See [DATABASE_GUIDE.md](DATABASE_GUIDE.md) for initialization and persistence behavior.
 
-## 生成与复现
+## Reproducible Generation
 
-在项目根目录执行 `python generate_data.py`。
-生成的四个 UTF-8 BOM CSV 位于 `sample_data/`；重复执行覆盖这些示例文件，
-不会修改数据库已导入的数据。种子固定为 `20261023`，
-统计基准日固定为 `2026-10-23`，不读取系统当天日期。
-演示导入命令和示例下载调用相同生成函数；页面不会自动生成替代数据库数据。
+Run `python generate_data.py` from the project root. It writes four UTF-8-with-BOM CSV example files to `sample_data/`. Re-running the generator replaces those sample files only; it does not modify imported database records.
 
-- 6 个模拟制造产品；材料成本10–80、人工3–20、制造费用2–10，保留两位小数。
-- 12 个模拟客户，合作开始日2024-01-01；最后一位仅3笔交易，用于展示小样本。
-- 300笔订单日期分布在2025-10-24至2026-10-23，数量10–500。
-- 当时成本为产品成本合计的85%–115%；成交单价以10%–35%的模拟毛利率倒算。
-- 账期随机选15/30/45/60天；候选付款相对到期日为-5/0/0/3/10/30/60天。
-  约18%随机设为未付，候选付款晚于基准日也设为空，因此实际未付比例可能高于18%。
-- 库存现有量100–2000，预留量0至现有量。库存0合法，不允许负值或超额预留。
-- 默认币种CNY，计量单位为件或千克。所有随机过程使用局部固定种子。
+The random seed is `20261023`; the fixed reference date is `2026-10-23`. The generator does not use the system date.
 
-## 格式与校验
+- Six synthetic manufacturing products; material cost ranges from 10 to 80, labor from 3 to 20, and manufacturing overhead from 2 to 10, rounded to two decimal places.
+- Twelve synthetic customers, with a cooperation start date of 2024-01-01. The last customer has only three assigned transactions to demonstrate a small sample.
+- 300 transaction records dated from 2025-10-24 through 2026-10-23, with quantities from 10 to 500.
+- Historical unit cost is 85%–115% of the product's material, labor, and overhead sum. Transaction price is generated from a synthetic gross margin between 10% and 35%.
+- Contract terms are randomly selected from 15, 30, 45, and 60 days. Candidate payment dates are 5 days early, on time, or 3, 10, 30, or 60 days late. Approximately 18% are randomly marked unpaid; candidates after the reference date are also stored as unpaid, so the final unpaid share can be higher.
+- Inventory on hand ranges from 100 to 2,000; reserved quantity is between zero and on-hand quantity.
+- Currency defaults to CNY. Units are either pieces (`件`) or kilograms (`千克`). Random generation uses a local fixed seed.
 
-从数据中心选择类型、下载示例CSV，保留完整中文表头。
-历史交易比原始字段清单多保存“单位”“币种”快照，两列也必填。
-支持CNY/USD/EUR，不换汇；单位文本必须与引用产品完全一致。
-所有字段必填，仅实际付款日期允许空白。日期严格为 YYYY-MM-DD。
-主键：产品ID、客户ID、订单ID；库存以产品ID唯一。
-数值必须有限，价格/成本非负、交易数量>0、库存数量>=0。
-校验产品/客户外键、时间先后及预留不超现有量；
-修改或删除主数据不能使现有交易/库存失去引用或币种单位不一致。
-数据中心允许数值型交易数量含小数；原手动报价计算器仍使用正整数采购量。
+## CSV Format and Validation
 
-上传按ID合并：新增ID插入，已有ID更新，未上传记录保留。可多表一起提交。
-勾选模拟数据确认后点击“校验并保存到数据库”。
-只有全批全部校验通过且数据库事务提交后才保存成功，失败时原数据不变；显示类型、行号、字段、原因。
-表头为第1行。上传文件使用CSV物理起始行；原有表的引用错误按表头加记录序号定位。
-空表、未知/重复表头也会被拒绝。成功后清除原报价结果，避免使用过期结果。
+Download examples from Data Center and preserve the Chinese machine-readable headers. Historical transaction CSVs also require `单位` and `币种` snapshot columns. These CSV contracts are intentionally not translated.
 
-## 共享读取
+Supported currencies include CNY, USD, and EUR; values are not converted between currencies. A transaction's unit must match its referenced product. All fields are required except `实际付款日期`. Dates use `YYYY-MM-DD`.
 
-- `shared_data.get_data()`：从数据库读取有效数据，不使用会话业务缓存。
-- `shared_data.import_data()`：校验后在同一事务中合并保存。
-- `data_service.comparable_transactions()`：仅同产品ID、币种、计量单位的交易。
-- 成本计算页选产品后预填成本，仍可手工调整；历史页只展示匹配交易。
-- `data_service.py`、`generate_data.py` 可独立于Streamlit调用和测试。
+Primary keys are product ID, customer ID, and order ID; inventory is unique by product ID. Numeric values must be finite. Prices and costs must be non-negative, transaction quantity must be positive, and inventory quantities may be zero. Validation checks foreign-key references, date ordering, reserved quantity limits, and consistency of referenced product currency and unit.
 
-## 付款口径
+Data Center merges rows by ID: new IDs are inserted, matching IDs updated, and omitted rows retained. Multiple CSV types can be imported together. The user must confirm the files contain team-generated synthetic data. The entire batch is validated and saved in a database transaction; an error prevents the whole batch from being applied. Errors include type, row, field, and reason. CSV row numbers are physical file lines (header is line 1); cross-table errors may identify the existing table and record index.
 
-截至所选日期日终，先排除未来订单。
-已到期订单：约定付款日期<=统计日。
-按时付款率：已到期订单中截至统计日已付款且实际付款日<=到期日的笔数/到期笔数。
-未付到期订单保留在分母，无到期订单显示“无到期样本”。
-当前逾期未付：到期日<统计日，且未付或付款日>统计日。
-历史逾期天数：截至统计日已付款订单的逾期天数累计；每单最小为0。
-未付逾期天数单独列出，不混入历史已付累计值。
-到期少于10笔提示样本不足；该阈值仅为演示，不意味着10笔就统计可靠。
-不得将付款表现称为诚信判断，不自动决定授信、账期或先货后款。
+The data-center import permits decimal transaction quantities; the inquiry interface permits positive decimal quantities as well.
 
-## 验证
+## Shared Data Access
 
-运行 `python -m unittest discover -s tests -v`。
-1. 数据中心逐类查看、下载CSV：应为6/12/300/6行。
-2. 上传示例并确认模拟数据：成功后其他页面可读取。
-3. 修改数量为0、价格为负、日期非法、ID重复或外键不存在：显示具体错误，原数据不变。
-4. 联合上传新产品和引用它的库存；引用不存在时拒绝，完整引用通过。
-5. 检查付款汇总口径与逐单明细，改变统计日观察未到期/未付状态变化。
-6. 成本页选择产品，核对预填成本、单位、币种；历史页核对仅显示匹配交易。
+- `shared_data.get_data()` reads current valid data from PostgreSQL; it does not use a session-scoped business-data cache.
+- `shared_data.import_data()` validates and merges a batch transactionally.
+- `data_service.comparable_transactions()` compares only the same product ID, currency, and unit.
+- Inquiry cost fields are prefilled from the selected product and may be adjusted for that inquiry.
+- The historical-price page only shows transactions matching product, currency, and unit.
+- `data_service.py` and `generate_data.py` can be used independently of Streamlit.
+
+## Legacy Customer Payment Summary
+
+The current summary uses the synthetic historical transaction's whole-order `实际付款日期`; it does not yet provide a complete partial-payment UI.
+
+For a selected analysis date at end of day, transactions dated after the cutoff are excluded. Orders are due when the agreed payment date is on or before the cutoff. The on-time rate counts orders paid by the cutoff on or before the agreed due date divided by due orders; unpaid due orders remain in the denominator. When there are no due orders, the rate is unavailable. Current overdue unpaid means the agreed due date is before the cutoff and the order is unpaid or was paid after the cutoff. Historical overdue days are accumulated only for orders paid by the cutoff and are floored at zero. Unpaid overdue days are shown separately.
+
+Fewer than 10 due transactions triggers a small-sample warning. This is a demonstration threshold, not evidence that 10 observations are statistically reliable. Payment history is not an integrity rating and does not automatically set credit limits, payment terms, or delivery-before-payment decisions.
+
+## Verification
+
+Run `python -m unittest discover -s tests -v` for the repository's unit suite. Database-backed CSV behavior requires the development database configured as described in [DATABASE_GUIDE.md](DATABASE_GUIDE.md).

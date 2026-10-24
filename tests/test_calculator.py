@@ -1,4 +1,4 @@
-"""计算逻辑回归测试，不依赖 Streamlit 页面。"""
+"""Regression tests for calculation logic, independent of Streamlit pages."""
 import unittest
 from decimal import Decimal
 

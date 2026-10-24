@@ -67,7 +67,7 @@ else:
 st.subheader("模型预测成交单价（独立辅助参考）")
 model_value, model_reason, model_meta = None, "关键单位成本缺失，不能预测；继续使用历史参考及可用成本信息。", None
 if all(s["costs"].get(f) not in ("", None) for f in COSTS[:3]):
-    # 历史“当时单位成本”口径为三项生产成本合计，不混入整批固定/物流分摊。
+    # Historical unit cost is the sum of the three production costs, excluding batch fixed/logistics allocation.
     production_cost = sum(number(s["costs"][f]) for f in COSTS[:3])
     model_value, model_reason, model_meta = predict_price(
         r["product_id"], r["currency"], r["unit"], r["quantity"], production_cost, r["created_at"].date())

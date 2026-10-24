@@ -1,4 +1,4 @@
-"""PostgreSQL 持久化。禁止打印原始连接或数据库异常。"""
+"""PostgreSQL persistence. Never print raw connection strings or database exceptions."""
 import os
 from datetime import date
 from decimal import Decimal
@@ -15,7 +15,7 @@ from db_schema import metadata, tables, operation_logs
 
 
 class DatabaseUnavailable(RuntimeError):
-    """只包含可公开展示的错误，不附带底层异常或凭据。"""
+    """A user-safe error that does not expose underlying exceptions or credentials."""
 
 
 @lru_cache(maxsize=1)
@@ -48,7 +48,7 @@ def _read(conn):
 
 def read_data():
     try:
-        # 四表读取使用同一快照，避免并发导入时读到混合版本。
+        # Read all four tables from one snapshot to avoid mixed versions during concurrent imports.
         with engine().connect().execution_options(isolation_level="REPEATABLE READ") as conn:
             with conn.begin():
                 return _read(conn)
@@ -66,7 +66,7 @@ def check_connection():
 
 
 def initialize():
-    """仅供人工执行的开发数据库初始化，不在启动或部署中调用。"""
+    """Manually initialize a development database; never call during startup or deployment."""
     if os.environ.get("REPLIT_DEPLOYMENT") == "1":
         raise DatabaseUnavailable("不允许在部署环境初始化；生产结构通过 Replit Publish 管理。")
     try:
@@ -91,7 +91,7 @@ def import_csv(uploads, *, seed_only=False):
         return errors
     try:
         with engine().begin() as conn:
-            # 所有导入共用事务级锁，串行化“读取-校验-写入”。
+            # Serialize import read/validate/write operations with a transaction-scoped lock.
             conn.execute(text("SELECT pg_advisory_xact_lock(72623109)"))
             current = _read(conn)
             candidate = {}
@@ -125,7 +125,7 @@ def import_csv(uploads, *, seed_only=False):
                 conn.execute(operation_logs.insert().values(
                     id=str(uuid4()), action="demo_import" if seed_only else "csv_import",
                     actor="demo_operator", details={"模拟数据": True, "写入数量": changed}))
-        # 仅在事务提交成功之后返回成功状态。
+        # Report success only after the transaction commits.
         return []
     except SQLAlchemyError:
         raise DatabaseUnavailable("数据库导入失败，整批事务已回滚，没有保存半批数据。请检查连接、字段或数据库约束。") from None

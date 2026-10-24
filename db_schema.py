@@ -1,4 +1,4 @@
-"""SQLAlchemy 数据表定义；导入模块不会创建或修改数据库。"""
+"""SQLAlchemy table definitions; importing this module does not modify the database."""
 from sqlalchemy import (MetaData, Table, Column, Text, Numeric, Date, DateTime,
                         Integer, ForeignKey, CheckConstraint, UniqueConstraint, func)
 from sqlalchemy.dialects.postgresql import JSONB

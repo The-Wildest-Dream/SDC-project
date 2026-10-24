@@ -1,4 +1,4 @@
-"""历史成交价原型：只加载本项目训练脚本生成的可信模型。"""
+"""Historical transaction-price prototype; load only the trusted project-trained artifact."""
 from datetime import date, timedelta
 from pathlib import Path
 from functools import lru_cache

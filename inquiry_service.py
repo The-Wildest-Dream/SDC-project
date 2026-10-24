@@ -1,4 +1,4 @@
-"""询价及审批提交：数据库事务和服务端规则复核。"""
+"""Inquiry persistence and server-side transaction and submission validation."""
 from datetime import date
 from uuid import uuid4
 import json
@@ -52,5 +52,5 @@ def list_inquiries():
 
 
 def submit(identifier, price, *, actor):
-    """旧询价提交入口关闭，统一使用带版本/角色校验的报价工作流。"""
+    """Disable the legacy inquiry submission entry point in favor of the versioned, role-checked workflow."""
     raise ValueError("请在报价记录中提交已保存的报价草稿。")

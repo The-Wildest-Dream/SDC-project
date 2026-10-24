@@ -1,4 +1,4 @@
-"""使用已保存快照导出，HTML转义防注入，CSV防公式执行。"""
+"""Export saved snapshots; escape HTML and guard CSV spreadsheet formulas."""
 import csv
 import io
 from html import escape

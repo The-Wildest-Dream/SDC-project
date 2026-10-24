@@ -1,82 +1,205 @@
-# 中小制造企业报价辅助系统
+# SME Manufacturing Quotation Assistant
 
-中文 Python + Streamlit 学生比赛演示，当前完成六页导航、报价计算器和数据中心。
-重点是价格分析与报价决策；数据中心支持模拟库存、历史付款记录及付款表现汇总，库存提醒待实现。
-数据生成规则、CSV格式、导入及付款口径见 `DATA_GUIDE.md`。
-新建询价、成本来源、历史参考、人工报价及提交规则见 `QUOTATION_GUIDE.md`，其说明替代下方旧版计算器的逐页验证流程。
-最新模拟角色、报价草稿编辑、经理审批、版本保留、下载和工作台说明见 `WORKFLOW_GUIDE.md`，以此为当前流程。
-历史成交价格预测已接入：训练、评估、适用范围及发布加载见 `MODEL_GUIDE.md`。旧文档“未训练AI”的描述仅代表此前阶段。
-所有示例数据为模拟数据；业务基础数据已接入PostgreSQL持久化，不接入机器学习。
-数据库初始化、检查、关系说明与导入规则见 `DATABASE_GUIDE.md`。
+A Python and Streamlit demonstration application for small and medium-sized manufacturers. It supports **price analysis and quotation decisions** by combining product costs, synthetic transaction history, quotation rules, payment terms, and a simulated approval workflow. Inventory and customer payment information are supplementary signals only. The application does not guarantee optimal profit or assess a customer's integrity.
 
-## 启动
+## Team Information
 
-需要 Python 3.10 或更新版本。
+| Item | Information |
+|---|---|
+| Team Name | TODO — official team name not confirmed |
+| Domain | Domain 2 |
+| SDG Track and Target | TODO — not confirmed |
+| Team Leader | TODO |
+| University Affiliation(s) | TODO |
+| Number of Members | TODO |
+
+| Name | Role and Contribution | GitHub |
+|---|---|---|
+| TODO | TODO | TODO |
+
+## Project Links
+
+| Resource | Link / Status |
+|---|---|
+| GitHub Repository | [The-Wildest-Dream/SDC-project](https://github.com/The-Wildest-Dream/SDC-project) |
+| Replit Project | TODO — provide the canonical project URL |
+| Live Demo | TODO — provide a published application URL |
+| Slide Deck | TODO |
+| YouTube Pitch / Demo Video | TODO |
+| RunPod Endpoint | Not used by this application; confirm whether the competition requires one |
+
+The repository is known from the submitted project information. Other links are not inferred from a development preview URL.
+
+## Problem and Solution
+
+Small manufacturers may need to reconcile material, labor, overhead, batch charges, delivery costs, prior transaction prices, payment terms, and approval steps when preparing a quote. This demo gives sales staff and managers a single workflow for reviewing those inputs. It stores snapshots with quote versions so that later product-cost changes do not rewrite an already saved quote.
+
+The target users are manufacturing sales staff and managers in a simulated competition workflow. Human staff enter the final proposed price; the simulated manager makes the approval decision. Historical statistics and model predictions are references, not automatic decisions.
+
+The application includes a scikit-learn regression prototype that predicts historical transaction unit prices. Transparent rules calculate cost floors and financing costs. The model does not predict purchase probability or an optimal-profit price.
+
+## Implemented Features
+
+Implementation claims below describe repository code; they are not all claims of end-to-end production validation.
+
+- Synthetic product, customer, transaction, and inventory data; reproducible generator and CSV viewing, validation, import, and export.
+- Inquiry creation, cost snapshots, target and minimum margin calculations.
+- Comparable historical price statistics and a saved offline historical transaction-price model.
+- Payment-term and financing-cost calculations plus rule-based validity suggestions in the inquiry flow. These are demonstration inputs and rules, not a persistent manager-managed policy system.
+- Customer payment summaries based on legacy whole-order payment dates. A payment-ledger table and service code exist, but an integrated partial-payment import and reporting workflow is not complete.
+- Inventory availability reminders; they do not trigger purchasing or promise delivery.
+- Simulated sales/manager quote workflow, version snapshots, approval records, and operation logs.
+- CSV and printable HTML quote exports.
+- A session-scoped language selector and static resources for Simplified Chinese, English, and Bahasa Melayu. Translation coverage is incomplete; some interface text falls back to Chinese.
+
+## Demo Walkthrough
+
+Prerequisites: Python 3.13 as declared in `pyproject.toml`, the dependencies in `requirements.txt`, and a PostgreSQL `DATABASE_URL`.
+
+1. Initialize a development database and load the synthetic demo data as described in [Setup and Run](#setup--run).
+2. Start the Streamlit application and choose a demo role in the sidebar. Role switching is not authentication or production-grade authorization.
+3. Open **New Inquiry & Costing** (the page title may currently be localized or partly untranslated). Select a customer and product; review the cost and payment-term inputs, then save the inquiry.
+4. Open **Historical Prices & Quote Guidance**. Review comparable transactions, the model reference when available, cost floor, and manually proposed quote. Save a quote draft.
+5. Open **Quote Records & Downloads** and submit the sales-owned draft for approval.
+6. Switch to the simulated Manager role, open **Approvals**, enter an approval comment, and approve or reject the pending version.
+7. Return to quote records and download the saved version as CSV or printable HTML.
+
+The role selector is a demonstration control only. It is not proof of a user's identity.
+
+## Architecture and Technology
+
+- Python 3.13, Streamlit, SQLAlchemy, psycopg 3, PostgreSQL.
+- scikit-learn, pandas, and joblib for offline training, evaluation, and model loading.
+- `app.py` is the Streamlit multipage entry point; page modules call Python services and rule functions.
+- PostgreSQL stores business data; `DATABASE_URL` is read from the runtime environment.
+- `train_price_model.py` generates the model artifact offline. The app loads the artifact; it does not train on page refresh.
+- Replit runs the Streamlit app through `start.sh` on `PORT` (default 3000).
+
+The repository also contains React/Vite and API-server template artifacts. They are not the quotation application's runtime architecture. No RunPod endpoint is used.
+
+```mermaid
+flowchart LR
+  User[Browser] --> Replit[Replit Streamlit workflow]
+  Replit --> Pages[Python Streamlit pages]
+  Pages --> Services[Rules and Python services]
+  Services --> DB[(PostgreSQL via SQLAlchemy and psycopg)]
+  Pages --> Model[Saved scikit-learn model]
+  Trainer[Offline synthetic-data training] --> Model
+```
+
+## Repository Structure
+
+| Path | Purpose |
+|---|---|
+| `app.py`, `*_page.py` | Streamlit entry point and page modules |
+| `quotation_rules.py`, `finance_rules.py`, `inquiry_service.py`, `workflow_service.py`, `payment_service.py` | Cost, payment, inquiry, and quote workflow logic |
+| `database.py`, `db_schema.py`, `data_service.py`, `shared_data.py` | PostgreSQL schema, connection, CSV validation, and shared data access |
+| `generate_data.py`, `sample_data/` | Fixed-seed synthetic data generator and sample CSVs |
+| `train_price_model.py`, `price_model.py`, `models/historical_price/` | Offline model training, prediction, and evaluation artifact |
+| `locales/`, `i18n.py` | Static translation resources and session language helper |
+| `tests/`, `verify_database.py`, `verify_workflow.py` | Unit and manual database workflow checks |
+| `DATA_GUIDE.md`, `DATABASE_GUIDE.md`, `MODEL_GUIDE.md`, `QUOTATION_GUIDE.md`, `WORKFLOW_GUIDE.md` | Technical guides |
+| `submission/` | Missing; required signed PDFs and evidence have not been supplied |
+| `artifacts/quotation/` | Replit artifact directory containing preview scaffold files; app launch uses root `start.sh` |
+
+## Setup and Run
+
+Install Python 3.13 and project dependencies:
 
 ```bash
 python -m pip install -r requirements.txt
+```
+
+Configure `DATABASE_URL` using the Replit database/environment configuration. Do not place credentials in source files, README, or logs. Then, in a **development** environment:
+
+```bash
+python db_manage.py check
 python db_manage.py init
 python db_manage.py seed
+python db_manage.py counts
 sh start.sh
 ```
 
-默认访问 http://localhost:3000。启动脚本优先使用 `PORT` 环境变量。
-也可直接运行 `python -m streamlit run app.py`（默认端口 8501）。
-Replit 中运行 `artifacts/quotation: web` 工作流后打开“制造企业报价辅助系统”预览。
+`init` creates missing tables only; it does not clear or rebuild existing data. `seed` adds missing synthetic master/transaction records and is intended to be repeatable. Do not repeatedly reset or clear the database. `migrate_legacy_quotes.py` is a separate development-only compatibility utility; do not run it in production.
 
-## 主要文件
+The Streamlit service listens on `PORT`, defaulting to `3000`. In Replit, start the configured `artifacts/quotation: web` workflow and use its Preview. The canonical Replit project and published URL remain TODO in the project links.
 
-- `app.py`：应用入口、公共说明与六页侧边栏导航。
-- `quote_page.py`：原报价计算器的表单、校验提示、结果与公式核对。
-- `pending_page.py`：待实现页面的统一展示和范围说明。
-- `calculator.py`：独立计算函数，使用 Decimal 进行十进制计算。
-- `data_page.py`：数据中心表格、CSV下载上传和付款汇总。
-- `data_service.py`：CSV解析、跨表校验、可比交易筛选及付款汇总逻辑。
-- `generate_data.py`：固定种子数据生成及CSV输出。
-- `shared_data.py`：页面数据库读写入口及安全错误展示。
-- `db_schema.py`：八张业务表及约束定义。
-- `database.py`：安全连接、数据库读取、事务化合并导入。
-- `db_manage.py`：开发初始化、演示导入、连接检查与记录计数命令。
-- `verify_database.py`：实际数据库幂等、回滚和不可用验证。
-- `history_page.py`：读取同产品、币种、单位的历史交易（报价建议待实现）。
-- `tests/test_data.py`：生成、校验、引用、付款口径回归测试。
-- `tests/test_calculator.py`：计算函数回归测试，不依赖页面。
-- `requirements.txt`：Streamlit 依赖版本。
-- `start.sh`：启动命令及监听地址、端口设置。
+## AI Model and Evaluation
 
-## 计算逻辑
+The saved model predicts **historical transaction unit price**. It uses separate `StandardScaler + Ridge(alpha=1)` pipelines for each product/currency/unit group. Numeric features are quantity, historical unit cost, ordinal date, and month; product/currency/unit select a group. Actual payment dates and transaction price are not input features.
 
-1. 单位成本 = 单位材料成本 + 单位人工成本 + 单位制造费用
-   + (整批固定费用 + 整批物流费用) / 数量。
-2. 参考单价 = 单位成本 / (1 - 目标毛利率 / 100)。
-3. 整单报价 = 参考单价 × 数量。
+Training uses only the fixed-seed synthetic trades produced by `generate_data.generate()`, not database uploads. Records are sorted by date and order ID, then split chronologically; same-day records remain together. The preprocessing pipeline is fitted on training data only. The baseline is the training-set median price for the same group, compared with the model on the same held-out test records using MAE.
 
-数量必须为正整数；毛利率取值为 0%（含）至 100%（不含）；
-费用不可为负，产品名称不可为空。非法输入不产生报价。
-毛利率是利润占售价的比例，不是成本加价率。
-中间值不提前舍入，仅展示金额时保留两位小数。
+The committed evaluation artifact reports a split date of 2026-08-13 (239 training and 61 test records). Four of six product groups have lower model MAE than the baseline; P001 and P005 do not. See [MODEL_GUIDE.md](MODEL_GUIDE.md) and `models/historical_price/evaluation.json` for per-group values and ranges. Synthetic-data metrics validate only the prototype workflow and do not demonstrate real commercial benefit.
 
-默认模拟案例：100 件，材料 30 元、人工 15 元、制造 5 元，
-整批固定费用 800 元、物流 200 元，毛利率 20%。
-单位成本为 60 元，参考单价为 75 元，整单报价为 7,500 元。
+The app falls back to cost and historical references when a model is missing, a group has insufficient data, or inputs are out of range. Re-train explicitly with `python train_price_model.py`; uploaded data does not enter training automatically. The generated `joblib` artifact is loaded at runtime and should only be loaded from a trusted project build.
 
-## 逐页验证
+## Data and Privacy
 
-1. 点击 Run，打开 Preview：默认显示“工作台”，左侧有六个导航项。
-2. 工作台：显示“待实现”，不应出现业务统计数字。
-3. 数据中心：按 `DATA_GUIDE.md` 查看模拟数据、下载上传CSV和验证付款口径。
-4. 新建询价与成本计算：默认参数点击“计算报价”，应得到 60、75、
-   7,500 元；查看代入过程。数量改为 0 或负数、毛利率改为 100 或
-   101 后提交，应显示错误，且不保留上一份报价结果。
-5. 历史价格与报价建议：选择产品查看可比历史交易，报价建议仍为待实现。
-6. 审批中心：显示“待实现”，没有提交、通过或驳回按钮。
-7. 报价记录与下载：显示“待实现”，不应把计算结果伪装成已保存记录，
-   没有下载按钮。
-8. 在页面之间切换，再返回计算页，仍可重新输入并计算。
-   表单未提交的修改不保存；当前会话中的最近一次计算结果可继续查看。
+The generator uses a fixed random seed to create synthetic products, customers, transactions, and inventory. Its rules and CSV contracts are documented in [DATA_GUIDE.md](DATA_GUIDE.md). Valid imported business data is stored in PostgreSQL. This repository does not claim automatic deletion or encryption beyond the platform/database configuration.
 
-运行计算逻辑测试：`python -m unittest discover -s tests -v`。
-启动脚本和预览服务配置沿用原有设置；新增SQLAlchemy及psycopg 3依赖。
+The sales and manager roles are simulated values used for workflow demonstration. Backend business functions also validate role codes and quote states, but there is no real user authentication or production-grade access-control system. Database credentials are obtained from `DATABASE_URL` at runtime and are not included here.
+
+## Testing and Verification
+
+Commands available in the repository:
+
+```bash
+python -m unittest discover -s tests -v
+python verify_database.py
+python verify_workflow.py
+```
+
+The unit suite covers calculation, data validation, and model behavior. The database verification script requires a configured development PostgreSQL database and performs transactional checks. The workflow verification script creates synthetic demonstration quote records; review its behavior before running against a shared database.
+
+For this documentation-only change, repository links and document inventory are checked. **Not run:** unit tests, database verification, and interactive approval flow; this change does not modify application code. Prior recorded model evaluation is described above, not rerun as part of this documentation update.
+
+## Replit, RunPod, and Sponsor Resources
+
+The repository is configured to run the Streamlit app in a Replit workflow and declares an Autoscale deployment target. This confirms project configuration, not a currently published or competition-accessible production URL. RunPod is not used in the application; confirm whether a RunPod endpoint or usage evidence is required by the competition. No sponsor-credit usage evidence is present in the repository.
+
+## AI-Assisted Development and Third-Party Resources
+
+Replit Agent was used in this workspace for implementation and documentation assistance. ChatGPT and other tools: TODO — team confirmation required. Human review/sign-off of every generated or translated section: TODO — team confirmation required.
+
+Runtime dependencies listed in `requirements.txt` include Streamlit, SQLAlchemy, psycopg, scikit-learn, joblib, and pandas. Exact package versions are listed in that file. Their individual license notices have not been independently inventoried here; retain third-party notices and consult package metadata before redistribution.
+
+## Known Limitations and Future Improvements
+
+- All supplied transaction and business data are synthetic. Model performance on them does not establish real-world accuracy or commercial impact.
+- The model does not beat its baseline for every product group and falls back outside its supported ranges.
+- Simulated role selection is not identity authentication or production authorization.
+- The payment-ledger schema/service is not yet connected to a complete partial-payment import and analysis UI; current customer summaries rely on whole-order payment dates.
+- Validity inputs/rules are demonstration-level and are not managed through a durable manager policy screen.
+- The three-language selector and static resources are present, but translation coverage is incomplete and some strings fall back to Chinese.
+- Competition identity, SDG target, published links, signatures, and sponsor evidence remain unconfirmed.
+
+## Submission Materials and Checklist
+
+Required file names use the official team name, which is currently **TODO**. No submission PDFs were found:
+
+| Material | Status |
+|---|---|
+| `submission/SDC2026_<TeamName>_Preliminary.pdf` | Missing |
+| `submission/SDC2026_<TeamName>_TechDeclaration.pdf` | Missing |
+| `submission/SDC2026_<TeamName>_Replit_POU.pdf` | Missing |
+| RunPod usage evidence | Missing / requirement applicability to confirm; RunPod is not used by the app |
+| Slide deck | Missing / link TODO |
+| 5–7 minute YouTube video | Missing / link TODO |
+| Published prototype URL | TODO |
+
+Submission checklist (not verified):
+
+- [ ] Official team name and all member details confirmed.
+- [ ] Repository visibility is Public.
+- [ ] Root Apache 2.0 `LICENSE` is present.
+- [ ] Committee-designated account can access the project.
+- [ ] All project and submission links are accessible.
+- [ ] Technical declaration and signatures are complete.
+- [ ] Official website submission is complete.
+- [ ] RunPod requirement and any required evidence are confirmed.
+
+Completing this README does not mean the competition submission is complete.
 
 ## License
 

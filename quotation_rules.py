@@ -1,4 +1,4 @@
-"""透明规则：Decimal计算、不提前舍入，不依赖页面或AI。"""
+"""Transparent Decimal-based rules with no premature rounding or page/AI dependency."""
 from decimal import Decimal, InvalidOperation
 
 COSTS = ["单位材料成本", "单位人工成本", "单位制造费用", "整批固定费用", "卖方承担的整批物流费用"]

@@ -1,4 +1,4 @@
-"""开发环境一次性兼容旧报价；重复执行不改变已迁移版本。"""
+"""Development-only compatibility for legacy quotes; repeated runs preserve migrated versions."""
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from database import engine, DatabaseUnavailable
