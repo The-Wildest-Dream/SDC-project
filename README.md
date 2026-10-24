@@ -200,18 +200,10 @@ Training uses 300 fixed-seed CNY transactions and 320 separate MYR synthetic tra
 
 | Product ID | Currency | Baseline MAE | Model MAE |
 |---|---|---:|---:|
-| P001 | CNY | 6.4500 | 7.5625 |
-| P002 | CNY | 5.9346 | 3.6515 |
-| P003 | CNY | 13.4467 | 10.7611 |
-| P004 | CNY | 5.8117 | 4.1854 |
-| P005 | CNY | 6.0617 | 6.5109 |
-| P006 | CNY | 7.4408 | 5.5226 |
 | P_MY_001 | MYR | 2.6636 | 2.3087 |
 | P_MY_002 | MYR | 0.4667 | 0.2990 |
 | P_MY_003 | MYR | 0.7900 | 0.4028 |
 | P_MY_004 | MYR | 1.4614 | 0.6866 |
-
-Regenerate the separate MYR review CSVs with `python generate_myr_data.py` and train explicitly with `python train_price_model.py`. Generation does not import data into PostgreSQL; inspect the CSVs before manually importing them. Four supported inquiry examples are listed in [`sample_data/MYR_演示询价示例.md`](sample_data/MYR_演示询价示例.md). These synthetic-data metrics demonstrate prototype behavior only, not verified Malaysian market prices or real commercial benefit. See [MODEL_GUIDE.md](MODEL_GUIDE.md) and [`evaluation.json`](models/historical_price/evaluation.json) for method and metadata.
 
 Predictions may be unavailable for unsupported inputs or groups. They never override minimum-margin rules or automatically set the final quote. The Sales/Manager role switch is a demonstration control, **not production authentication**. Payment summaries and stock reminders are informational, not automatic credit decisions or procurement actions.
 
