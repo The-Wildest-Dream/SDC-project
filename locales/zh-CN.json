@@ -1,0 +1,15 @@
+{
+  "lang.zh": "简体中文", "lang.en": "English", "lang.ms": "Bahasa Melayu",
+  "nav.workbench": "工作台", "nav.data": "数据中心", "nav.quote": "新建询价与成本计算", "nav.history": "历史价格与报价建议", "nav.approvals": "审批中心", "nav.records": "报价记录与下载",
+  "app.title": "中小制造企业报价辅助系统", "app.subtitle": "学生比赛演示 · 价格分析与报价决策", "app.demo": "所有展示数据均为模拟数据，仅用于教学与比赛演示，不作为实际交易报价。",
+  "role.label": "模拟角色 / 演示人员", "role.warning": "仅为比赛演示的角色切换，不是真实身份认证或生产级权限系统。", "role.sales": "销售人员", "role.manager": "经理",
+  "dashboard.title": "工作台", "data.title": "数据中心", "quote.title": "新建询价与成本计算", "history.title": "历史价格与报价建议", "approval.title": "审批中心", "records.title": "报价记录与下载",
+  "button.new": "新建询价", "button.approvals": "进入审批中心", "button.records": "进入报价记录与下载", "button.submit": "提交审批", "button.save": "保存报价草稿", "button.confirm": "确认审批", "button.approve": "批准", "button.reject": "驳回", "button.download.csv": "下载CSV报价单", "button.download.html": "下载可打印HTML报价单",
+  "state.draft": "草稿", "state.pending": "待审批", "state.approved": "已批准", "state.rejected": "已驳回", "state.all": "全部",
+  "common.simulated": "模拟数据", "common.empty": "暂无数据", "common.insufficient": "数据不足", "common.customer": "客户", "common.product": "产品", "common.quantity": "数量", "common.currency": "币种", "common.status": "状态", "common.unit": "单位", "common.date": "日期", "common.reason": "原因",
+  "history.base": "成本底线与目标报价（保存时的成本快照）", "history.reference": "历史参考（同产品、币种、单位）", "history.model": "模型预测成交单价（独立辅助参考）", "history.manual": "人工拟报价", "history.cost_source": "成本来源及修改理由",
+  "finance.title": "付款条件与综合报价参考", "finance.immediate": "立即付款参考报价", "finance.conditional": "当前付款条件参考报价", "finance.difference": "差额", "finance.advance": "预计垫付金额", "finance.cost": "资金占用成本",
+  "expiry.title": "有效期建议", "expiry.until": "建议有效期至 {date}（{days} 天）", "quote.saved": "报价草稿已保存：{id}。请到报价记录修改或提交审批。",
+  "error.db": "数据库操作失败。请检查数据库状态。", "approval.no_pending": "暂无待审批报价。", "records.empty": "暂无报价记录。请保存询价后在历史价格页保存报价草稿。",
+  "export.title": "报价单", "export.demo": "模拟演示 · 非真实交易凭证", "export.print": "使用浏览器打印功能打印。本报价仅用于比赛演示。"
+}

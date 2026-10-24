@@ -4,21 +4,29 @@ import io
 from html import escape
 from quotation_rules import number
 from workflow_service import LABELS
+from i18n import t, language
 
 
 def fields(row):
     p = row["payload"]
     terms = p.get("snapshot", {}).get("terms", {})
     total = "" if p["price"] in ("", None) else str(number(p["price"])*number(p["quantity"]))
-    return {"编号": row["id"], "询价编号": row["inquiry_id"], "版本": str(row["version"]),
-            "状态": LABELS[row["status"]] if row["status"] == "approved" else "草稿/未批准 · "+LABELS[row["status"]],
-            "客户": p["customer_name"], "产品": p["product_name"], "数量": p["quantity"],
-            "单位": p["unit"], "币种": p["currency"], "单价": p["price"], "总价": total,
-            "有效期": p["valid_until"], "交付日期": p["delivery_date"],
-            "预付款比例": terms.get("prepayment_pct", "未设置"),
-            "尾款账期天数": terms.get("term_days", "未设置"),
-            "年资金成本率": terms.get("annual_rate_pct", "未设置"),
-            "标记": "模拟演示 · 非真实交易凭证"}
+    if language() == "zh-CN":
+        labels = ["编号","询价编号","版本","状态","客户","产品","数量","单位","币种","单价","总价","有效期","交付日期","预付款比例","尾款账期天数","年资金成本率","标记"]
+        status = LABELS[row["status"]] if row["status"] == "approved" else "草稿/未批准 · "+LABELS[row["status"]]
+        demo = "模拟演示 · 非真实交易凭证"
+    elif language() == "en":
+        labels = ["Quote ID","Inquiry ID","Version","Status","Customer","Product","Quantity","Unit","Currency","Unit price","Total","Valid until","Delivery date","Advance payment (%)","Balance term (days)","Annual cost of funds (%)","Demo notice"]
+        status = {"draft":"Draft","pending":"Pending approval","approved":"Approved","rejected":"Rejected"}[row["status"]]
+        if row["status"] != "approved": status = "DRAFT / NOT APPROVED · "+status
+        demo = "DEMO ONLY · NOT A REAL TRANSACTION DOCUMENT"
+    else:
+        labels = ["ID Sebut Harga","ID Pertanyaan","Versi","Status","Pelanggan","Produk","Kuantiti","Unit","Mata wang","Harga seunit","Jumlah","Sah sehingga","Tarikh penghantaran","Bayaran pendahuluan (%)","Tempoh baki (hari)","Kos dana tahunan (%)","Notis demo"]
+        status = {"draft":"Draf","pending":"Menunggu kelulusan","approved":"Diluluskan","rejected":"Ditolak"}[row["status"]]
+        if row["status"] != "approved": status = "DRAF / BELUM DILULUSKAN · "+status
+        demo = "DEMO SAHAJA · BUKAN DOKUMEN TRANSAKSI SEBENAR"
+    vals=[row["id"],p["inquiry_id"] if "inquiry_id" in p else row["inquiry_id"],str(row["version"]),status,p["customer_name"],p["product_name"],p["quantity"],p["unit"],p["currency"],p["price"],total,p["valid_until"],p["delivery_date"],terms.get("prepayment_pct","Not set"),terms.get("term_days","Not set"),terms.get("annual_rate_pct","Not set"),demo]
+    return dict(zip(labels, vals))
 
 
 def csv_export(row):
@@ -36,9 +44,11 @@ def csv_export(row):
 def html_export(row):
     values = fields(row)
     body = "".join(f"<tr><th>{escape(k)}</th><td>{escape(str(v))}</td></tr>" for k, v in values.items())
-    return ("""<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>模拟演示报价单</title>
-<style>body{font-family:sans-serif;max-width:850px;margin:40px auto;padding:20px}table{width:100%;border-collapse:collapse}
-td,th{border:1px solid #ccc;padding:10px;text-align:left}h2{color:#994500}@media print{button{display:none}body{margin:0}}</style>
-<h1>报价单</h1><h2>模拟演示 · 非真实交易凭证</h2>"""
-            + f"<h2>{escape(values['状态'])}</h2><table>{body}</table>"
-            + '<p>使用浏览器打印功能或按 Ctrl/P、Cmd/P 打印。本报价仅用于比赛演示。</p></html>').encode("utf-8")
+    lang={"zh-CN":"zh-CN","en":"en","ms":"ms"}[language()]
+    title=t("export.title"); demo=t("export.demo"); printing=t("export.print")
+    return (f"""<!doctype html><html lang="{lang}"><meta charset="utf-8"><title>{escape(title)}</title>
+<style>body{{font-family:sans-serif;max-width:850px;margin:40px auto;padding:20px}}table{{width:100%;border-collapse:collapse}}
+td,th{{border:1px solid #ccc;padding:10px;text-align:left}}h2{{color:#994500}}@media print{{button{{display:none}}body{{margin:0}}}}</style>
+<h1>{escape(title)}</h1><h2>{escape(demo)}</h2>"""
+            + f"<h2>{escape(next(v for k,v in values.items() if k in ('状态','Status')))}</h2><table>{body}</table>"
+            + f"<p>{escape(printing)}</p></html>").encode("utf-8")

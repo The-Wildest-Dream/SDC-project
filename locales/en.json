@@ -1,0 +1,15 @@
+{
+  "lang.zh": "简体中文", "lang.en": "English", "lang.ms": "Bahasa Melayu",
+  "nav.workbench": "Dashboard", "nav.data": "Data Center", "nav.quote": "New Inquiry & Costing", "nav.history": "Historical Prices & Quote Guidance", "nav.approvals": "Approvals", "nav.records": "Quotes & Downloads",
+  "app.title": "Quotation Assistant for Small and Medium Manufacturers", "app.subtitle": "Student competition demo · Pricing analysis and quotation decisions", "app.demo": "All displayed data is synthetic and for education and demonstration only; it is not a commercial quote.",
+  "role.label": "Demo role", "role.warning": "Role switching is for demonstration only. It is not authentication or production-grade access control.", "role.sales": "Sales", "role.manager": "Manager",
+  "dashboard.title": "Dashboard", "data.title": "Data Center", "quote.title": "New Inquiry & Costing", "history.title": "Historical Prices & Quote Guidance", "approval.title": "Approvals", "records.title": "Quotes & Downloads",
+  "button.new": "New inquiry", "button.approvals": "Open approvals", "button.records": "Open quote records", "button.submit": "Submit for approval", "button.save": "Save quote draft", "button.confirm": "Confirm decision", "button.approve": "Approve", "button.reject": "Reject", "button.download.csv": "Download quote CSV", "button.download.html": "Download printable quote HTML",
+  "state.draft": "Draft", "state.pending": "Pending approval", "state.approved": "Approved", "state.rejected": "Rejected", "state.all": "All",
+  "common.simulated": "Synthetic data", "common.empty": "No data available", "common.insufficient": "Insufficient data", "common.customer": "Customer", "common.product": "Product", "common.quantity": "Quantity", "common.currency": "Currency", "common.status": "Status", "common.unit": "Unit", "common.date": "Date", "common.reason": "Reason",
+  "history.base": "Cost floor and target quote (saved cost snapshot)", "history.reference": "Historical reference (same product, currency and unit)", "history.model": "Predicted historical transaction price (supplementary reference)", "history.manual": "Manual proposed quote", "history.cost_source": "Cost sources and change reason",
+  "finance.title": "Payment terms and combined quote reference", "finance.immediate": "Reference quote for immediate payment", "finance.conditional": "Reference quote under current payment terms", "finance.difference": "Difference", "finance.advance": "Estimated cash advanced", "finance.cost": "Cost of funds",
+  "expiry.title": "Validity recommendation", "expiry.until": "Recommended valid until {date} ({days} days)", "quote.saved": "Quote draft saved: {id}. Edit it or submit it from Quote Records.",
+  "error.db": "Database operation failed. Check the database status.", "approval.no_pending": "No quotes are awaiting approval.", "records.empty": "No quote records yet. Save an inquiry, then save a quote draft from Historical Prices.",
+  "export.title": "Quotation", "export.demo": "DEMO ONLY · NOT A REAL TRANSACTION DOCUMENT", "export.print": "Print using your browser. This quotation is for demonstration only."
+}

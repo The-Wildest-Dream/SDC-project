@@ -2,6 +2,7 @@
 from functools import partial
 
 import streamlit as st
+from i18n import t, install, LANGS
 
 from pending_page import render_pending
 
@@ -11,26 +12,30 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
-st.title("中小制造企业报价辅助系统")
-st.caption("学生比赛演示 · 价格分析与报价决策")
-st.info("所有展示数据均为模拟数据，仅用于教学与比赛演示，不作为实际交易报价。")
 with st.sidebar:
-    st.selectbox("模拟角色 / 演示人员", ["销售甲", "销售乙", "经理"], key="demo_actor",
-                 format_func=lambda x: "销售人员 · " + x if x != "经理" else "经理")
-    st.warning("仅为比赛演示的角色切换，不是真实身份认证或生产级权限系统。")
+    st.selectbox("Language / 语言", LANGS, key="ui_language", index=0,
+                 format_func=lambda x: {"zh-CN":"简体中文","en":"English","ms":"Bahasa Melayu"}[x])
+install()
+st.title(t("app.title"))
+st.caption(t("app.subtitle"))
+st.info(t("app.demo"))
+with st.sidebar:
+    st.selectbox(t("role.label"), ["销售甲", "销售乙", "经理"], key="demo_actor",
+                 format_func=lambda x: f"{t('role.manager')} · {x}" if x == "经理" else f"{t('role.sales')} · {x}")
+    st.warning(t("role.warning"))
 
 pages = [
-    st.Page("dashboard_page.py", title="工作台",
+    st.Page("dashboard_page.py", title=t("nav.workbench"),
             url_path="workbench", default=True),
-    st.Page("data_page.py", title="数据中心",
+    st.Page("data_page.py", title=t("nav.data"),
             url_path="data"),
-    st.Page("quote_page.py", title="新建询价与成本计算", url_path="calculate"),
+    st.Page("quote_page.py", title=t("nav.quote"), url_path="calculate"),
     st.Page("history_page.py",
-            title="历史价格与报价建议", url_path="price-analysis"),
-    st.Page("approval_page.py", title="审批中心",
+            title=t("nav.history"), url_path="price-analysis"),
+    st.Page("approval_page.py", title=t("nav.approvals"),
             url_path="approvals"),
     st.Page("records_page.py",
-            title="报价记录与下载", url_path="records"),
+            title=t("nav.records"), url_path="records"),
 ]
 navigation = st.navigation(pages, position="sidebar")
 with st.sidebar:
