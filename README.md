@@ -6,7 +6,7 @@ A Python and Streamlit demonstration application for small and medium-sized manu
 
 | Item | Information |
 |---|---|
-| Team Name | TODO — official team name not confirmed |
+| Team Name | Nameless |
 | Domain | Domain 2 |
 | SDG Track and Target | TODO — not confirmed |
 | Team Leader | TODO |
