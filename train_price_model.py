@@ -4,6 +4,7 @@ import json
 import os
 from datetime import datetime, timezone
 from statistics import median
+from pathlib import Path
 import joblib
 import pandas as pd
 import sklearn
@@ -13,11 +14,61 @@ from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_absolute_error
 from generate_data import generate, SEED
 from price_model import MODEL_DIR, FEATURES, features, group_key
+from data_service import SCHEMAS, parse_csv, validate_bundle
+from generate_myr_data import SEED as MYR_SEED
+
+ROOT = Path(__file__).resolve().parent
+MYR_FILES = {
+    kind: ROOT / "sample_data" / f"MYR_模拟数据_{kind}.csv"
+    for kind in SCHEMAS
+}
+
+
+def load_training_rows():
+    """Load CNY synthetic trades and the separate, reviewed MYR CSV bundle."""
+    bundle = generate()
+    myr_bundle = {}
+    for kind, path in MYR_FILES.items():
+        if not path.is_file():
+            raise FileNotFoundError(
+                f"Missing MYR training CSV: {path}; run `python generate_myr_data.py` first."
+            )
+        rows, errors = parse_csv(kind, path.read_bytes())
+        if errors:
+            raise ValueError(f"Invalid MYR training file {path.name}: {errors}")
+        myr_bundle[kind] = [
+            {field: row[field] for field in SCHEMAS[kind]}
+            for row in rows
+        ]
+
+    cny_product_ids = {row["产品ID"] for row in bundle["产品"]}
+    cny_customer_ids = {row["客户ID"] for row in bundle["客户"]}
+    if cny_product_ids.intersection(row["产品ID"] for row in myr_bundle["产品"]):
+        raise ValueError("MYR product IDs must not overlap existing CNY product IDs.")
+    if cny_customer_ids.intersection(row["客户ID"] for row in myr_bundle["客户"]):
+        raise ValueError("MYR customer IDs must not overlap existing CNY customer IDs.")
+    if any(row["币种"] != "MYR" for row in myr_bundle["产品"]):
+        raise ValueError("All products in the MYR training bundle must use MYR.")
+    if any(row["币种"] != "MYR" for row in myr_bundle["历史交易"]):
+        raise ValueError("All transactions in the MYR training bundle must use MYR.")
+
+    combined = {
+        kind: [*bundle[kind], *myr_bundle[kind]]
+        for kind in SCHEMAS
+    }
+    errors = validate_bundle(combined)
+    if errors:
+        raise ValueError(f"Combined synthetic training bundle is invalid: {errors}")
+    return sorted(
+        combined["历史交易"],
+        key=lambda row: (row["订单日期"], row["订单ID"]),
+    )
 
 
 def train():
-    # Use only this project's fixed-seed synthetic transactions, never real transactions or payment data.
-    rows = sorted(generate()["历史交易"], key=lambda r: (r["订单日期"], r["订单ID"]))
+    # Use only the fixed-seed CNY generator and reviewed MYR CSVs; never database
+    # imports or post-transaction payment outcomes.
+    rows = load_training_rows()
     data_hash = hashlib.sha256(json.dumps(rows, ensure_ascii=False, sort_keys=True).encode()).hexdigest()
     cutoff = rows[int(len(rows)*.8)]["订单日期"]
     train_rows = [r for r in rows if r["订单日期"] < cutoff]
@@ -25,7 +76,8 @@ def train():
     metadata = {
         "trained_at_utc": datetime.now(timezone.utc).isoformat(),
         "data_version": data_hash, "generator_seed": SEED,
-        "source": "generate_data.generate()固定合成历史交易；不使用数据库真实数据",
+        "generator_seeds": {"CNY": SEED, "MYR": MYR_SEED},
+        "source": "固定种子CNY生成器 + sample_data中的MYR合成CSV；不使用数据库或付款结果",
         "sklearn_version": sklearn.__version__, "algorithm": "分产品/币种/单位 StandardScaler + Ridge(alpha=1)",
         "features": FEATURES, "group_fields": ["产品ID", "币种", "单位"],
         "target": "成交单价", "split_date": cutoff,

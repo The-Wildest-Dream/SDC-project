@@ -91,7 +91,7 @@ flowchart LR
 | `app.py`, `*_page.py` | Streamlit entry point and page modules |
 | `quotation_rules.py`, `finance_rules.py`, `inquiry_service.py`, `workflow_service.py`, `payment_service.py` | Cost, payment, inquiry, and quote workflow logic |
 | `database.py`, `db_schema.py`, `data_service.py`, `shared_data.py` | PostgreSQL schema, connection, CSV validation, and shared data access |
-| `generate_data.py`, `sample_data/` | Fixed-seed synthetic data generator and sample CSVs |
+| `generate_data.py`, `generate_myr_data.py`, `sample_data/` | Fixed-seed CNY and separate MYR synthetic data generators and review CSVs |
 | `train_price_model.py`, `price_model.py`, `models/historical_price/` | Offline model training, prediction, and evaluation artifact |
 | `locales/`, `i18n.py` | Static translation resources and session language helper |
 | `tests/`, `verify_database.py`, `verify_workflow.py` | Unit and manual database workflow checks |
@@ -125,9 +125,9 @@ The Streamlit service listens on `PORT`, defaulting to `3000`. In Replit, start 
 
 The saved model predicts **historical transaction unit price**. It uses separate `StandardScaler + Ridge(alpha=1)` pipelines for each product/currency/unit group. Numeric features are quantity, historical unit cost, ordinal date, and month; product/currency/unit select a group. Actual payment dates and transaction price are not input features.
 
-Training uses only the fixed-seed synthetic trades produced by `generate_data.generate()`, not database uploads. Records are sorted by date and order ID, then split chronologically; same-day records remain together. The preprocessing pipeline is fitted on training data only. The baseline is the training-set median price for the same group, compared with the model on the same held-out test records using MAE.
+Training uses the 300 fixed-seed CNY trades and 320 separate MYR transactions in the reviewable `sample_data/MYR_模拟数据_*.csv` files, not database uploads. Generate the MYR CSVs with `python generate_myr_data.py`; train explicitly with `python train_price_model.py`. Records are sorted by date and order ID, then split chronologically; same-day records remain together. The preprocessing pipeline is fitted on training data only. The baseline is the training-set median price for the same group, compared with the model on the same held-out test records using MAE. CNY and MYR remain separate; there is no conversion or pooled per-currency price comparison.
 
-The committed evaluation artifact reports a split date of 2026-08-13 (239 training and 61 test records). Four of six product groups have lower model MAE than the baseline; P001 and P005 do not. See [MODEL_GUIDE.md](MODEL_GUIDE.md) and `models/historical_price/evaluation.json` for per-group values and ranges. Synthetic-data metrics validate only the prototype workflow and do not demonstrate real commercial benefit.
+The current evaluation artifact uses a split date of 2026-08-13 (496 training and 124 test records). Model MAE is lower for 8 of 10 product/currency/unit groups; it is higher for CNY products P001 and P005. See [MODEL_GUIDE.md](MODEL_GUIDE.md) and `models/historical_price/evaluation.json` for actual per-group results. Synthetic-data metrics validate only the prototype workflow and do not demonstrate real commercial benefit or verified Malaysian market prices.
 
 The app falls back to cost and historical references when a model is missing, a group has insufficient data, or inputs are out of range. Re-train explicitly with `python train_price_model.py`; uploaded data does not enter training automatically. The generated `joblib` artifact is loaded at runtime and should only be loaded from a trusted project build.
 
@@ -153,7 +153,7 @@ For this documentation-only change, repository links and document inventory are 
 
 ## Replit, RunPod, and Sponsor Resources
 
-The repository is configured to run the Streamlit app in a Replit workflow and declares an Autoscale deployment target. This confirms project configuration, not a currently published or competition-accessible production URL. RunPod is not used in the application; confirm whether a RunPod endpoint or usage evidence is required by the competition. No sponsor-credit usage evidence is present in the repository.
+The repository is configured to run the Streamlit app in a Replit workflow and declares an Autoscale deployment target. This confirms project configuration, not a currently published or competition-accessible production URL. The app can call the configured RunPod Serverless endpoint; after changing the checked-in model artifact, rebuild and push the image and update/redeploy the endpoint using the steps in `runpod/README.md`. No sponsor-credit usage evidence is present in the repository.
 
 ## AI-Assisted Development and Third-Party Resources
 
@@ -181,7 +181,7 @@ Required file names use the official team name, which is currently **TODO**. No 
 | `submission/SDC2026_<TeamName>_Preliminary.pdf` | Missing |
 | `submission/SDC2026_<TeamName>_TechDeclaration.pdf` | Missing |
 | `submission/SDC2026_<TeamName>_Replit_POU.pdf` | Missing |
-| RunPod usage evidence | Missing / requirement applicability to confirm; RunPod is not used by the app |
+| RunPod usage evidence | RunPod inference is integrated; rebuild/push the updated MYR worker image and redeploy the existing endpoint before live MYR verification |
 | Slide deck | Missing / link TODO |
 | 5–7 minute YouTube video | Missing / link TODO |
 | Published prototype URL | TODO |

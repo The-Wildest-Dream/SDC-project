@@ -6,6 +6,19 @@ All generated records are synthetic and do not represent real companies or custo
 
 Run `python generate_data.py` from the project root. It writes four UTF-8-with-BOM CSV example files to `sample_data/`. Re-running the generator replaces those sample files only; it does not modify imported database records.
 
+Run `python generate_myr_data.py` to create a separate MYR bundle:
+`sample_data/MYR_模拟数据_产品.csv`, `MYR_模拟数据_客户.csv`,
+`MYR_模拟数据_历史交易.csv`, and `MYR_模拟数据_库存.csv`.
+It uses seed `20261024`, fixed reference date `2026-10-23`, four separate
+`P_MY_*` products, six separate `C_MY_*` customers, and 80 transactions per
+product (320 total). Costs are independently specified in MYR; each synthetic
+unit cost varies from 85% to 115% of its MYR material/labor/overhead total,
+and the synthetic transaction price is drawn from an independent MYR gross
+margin range of 12%–32%, with small random variation. These are fictional
+Malaysian manufacturing scenarios, not verified market prices or converted
+CNY amounts. Generation validates references and only writes the four review
+CSVs; it does not connect to or import into the database.
+
 The random seed is `20261023`; the fixed reference date is `2026-10-23`. The generator does not use the system date.
 
 - Six synthetic manufacturing products; material cost ranges from 10 to 80, labor from 3 to 20, and manufacturing overhead from 2 to 10, rounded to two decimal places.
@@ -20,7 +33,7 @@ The random seed is `20261023`; the fixed reference date is `2026-10-23`. The gen
 
 Download examples from Data Center and preserve the Chinese machine-readable headers. Historical transaction CSVs also require `单位` and `币种` snapshot columns. These CSV contracts are intentionally not translated.
 
-Supported currencies include CNY, USD, and EUR; values are not converted between currencies. A transaction's unit must match its referenced product. All fields are required except `实际付款日期`. Dates use `YYYY-MM-DD`.
+Supported currencies include CNY, USD, EUR, and MYR; values are not converted between currencies. A transaction's unit and currency must match its referenced product. All fields are required except `实际付款日期`. Dates use `YYYY-MM-DD`.
 
 Primary keys are product ID, customer ID, and order ID; inventory is unique by product ID. Numeric values must be finite. Prices and costs must be non-negative, transaction quantity must be positive, and inventory quantities may be zero. Validation checks foreign-key references, date ordering, reserved quantity limits, and consistency of referenced product currency and unit.
 
@@ -35,6 +48,7 @@ The data-center import permits decimal transaction quantities; the inquiry inter
 - `data_service.comparable_transactions()` compares only the same product ID, currency, and unit.
 - Inquiry cost fields are prefilled from the selected product and may be adjusted for that inquiry.
 - The historical-price page only shows transactions matching product, currency, and unit.
+- `train_price_model.py` reads the fixed-seed CNY generator and the separate MYR CSV files. The two currencies and product/unit groups remain separate; uploading CSV data never retrains the model.
 - `data_service.py` and `generate_data.py` can be used independently of Streamlit.
 
 ## Legacy Customer Payment Summary

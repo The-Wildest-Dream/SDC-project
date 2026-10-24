@@ -45,7 +45,7 @@
   "data.error.duplicate_header": "Nama lajur berulang ditemui", "data.error.required_field": "Medan wajib tiada",
   "data.error.unknown_field": "Medan tidak dikenali. Gunakan format CSV contoh.", "data.error.column_count": "Bilangan lajur tidak sepadan dengan pengepala",
   "data.error.empty": "Tidak boleh dikosongkan", "data.error.invalid_number": "Mesti nombor terhingga dan bukan negatif; kuantiti transaksi mesti melebihi 0",
-  "data.error.invalid_date": "Mesti tarikh sah dalam format YYYY-MM-DD", "data.error.currency": "Hanya CNY, USD dan EUR disokong; pertukaran mata wang tidak dilakukan",
+  "data.error.invalid_date": "Mesti tarikh sah dalam format YYYY-MM-DD", "data.error.currency": "Hanya CNY, USD, EUR dan MYR disokong; pertukaran mata wang tidak dilakukan",
   "data.error.product_missing": "Produk yang dirujuk tidak wujud", "data.error.reserved_stock": "Tidak boleh melebihi kuantiti sedia ada",
   "data.error.customer_missing": "Pelanggan yang dirujuk tidak wujud", "data.error.customer_date": "Tidak boleh lebih awal daripada tarikh mula hubungan pelanggan",
   "data.error.product_mismatch": "Mesti sepadan dengan produk yang dirujuk; unit dan mata wang tidak ditukar",

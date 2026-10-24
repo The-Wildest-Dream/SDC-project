@@ -67,6 +67,20 @@ class WorkerTests(unittest.TestCase):
         self.assertEqual(response["prediction_status"], "unavailable")
         self.assertIn("Missing required", response["error_reason"])
 
+    def test_worker_supports_myr_model_group(self):
+        payload = {
+            "product": "P_MY_001",
+            "currency": "MYR",
+            "unit": "件",
+            "quantity": 100,
+            "cost": 22.1,
+            "day": "2026-10-23",
+        }
+        response = handler({"input": payload})
+        self.assertEqual(response["prediction_status"], "available")
+        self.assertGreater(response["prediction"], 0)
+        self.assertTrue(response["model_version"])
+
 
 class ClientTests(unittest.TestCase):
     def _client(self, responses, **kwargs):

@@ -1,8 +1,12 @@
 {
-  "trained_at_utc": "2026-10-23T05:40:10.457103+00:00",
-  "data_version": "a7717b0380661acde368cdce2eb2554bac22bd0a690c1a623f8756298484dcec",
+  "trained_at_utc": "2026-10-24T13:12:37.300492+00:00",
+  "data_version": "b6d83cf569f9f528ea53b62f3ceb4a485271a52be3fe52f940394d4393e53d1e",
   "generator_seed": 20261023,
-  "source": "generate_data.generate()固定合成历史交易；不使用数据库真实数据",
+  "generator_seeds": {
+    "CNY": 20261023,
+    "MYR": 20261024
+  },
+  "source": "固定种子CNY生成器 + sample_data中的MYR合成CSV；不使用数据库或付款结果",
   "sklearn_version": "1.9.1",
   "algorithm": "分产品/币种/单位 StandardScaler + Ridge(alpha=1)",
   "features": [
@@ -19,8 +23,8 @@
   "target": "成交单价",
   "split_date": "2026-08-13",
   "split_rule": "前约80%日期训练，剩余日期测试；同一天不跨集合；不以测试集调参或重训",
-  "train_count": 239,
-  "test_count": 61,
+  "train_count": 496,
+  "test_count": 124,
   "groups": {
     "[\"P001\", \"CNY\", \"件\"]": {
       "status": "已训练",
@@ -163,6 +167,102 @@
         "historical_unit_cost": [
           38.9,
           49.91
+        ]
+      }
+    },
+    "[\"P_MY_001\", \"MYR\", \"件\"]": {
+      "status": "已训练",
+      "train_count": 66,
+      "test_count": 14,
+      "train_start": "2025-10-28",
+      "train_end": "2026-08-10",
+      "test_start": "2026-08-20",
+      "test_end": "2026-10-15",
+      "baseline": "仅训练集同产品/币种/单位成交价中位数",
+      "baseline_price": 27.945,
+      "baseline_mae": 2.663571428571429,
+      "model_mae": 2.308736583426817,
+      "comparison": "模型MAE较低",
+      "ranges": {
+        "quantity": [
+          24.0,
+          498.0
+        ],
+        "historical_unit_cost": [
+          18.87,
+          25.18
+        ]
+      }
+    },
+    "[\"P_MY_002\", \"MYR\", \"件\"]": {
+      "status": "已训练",
+      "train_count": 68,
+      "test_count": 12,
+      "train_start": "2025-10-27",
+      "train_end": "2026-08-11",
+      "test_start": "2026-08-15",
+      "test_end": "2026-10-20",
+      "baseline": "仅训练集同产品/币种/单位成交价中位数",
+      "baseline_price": 3.95,
+      "baseline_mae": 0.4666666666666666,
+      "model_mae": 0.29900752785423373,
+      "comparison": "模型MAE较低",
+      "ranges": {
+        "quantity": [
+          10.0,
+          483.0
+        ],
+        "historical_unit_cost": [
+          2.73,
+          3.64
+        ]
+      }
+    },
+    "[\"P_MY_003\", \"MYR\", \"件\"]": {
+      "status": "已训练",
+      "train_count": 64,
+      "test_count": 16,
+      "train_start": "2025-11-02",
+      "train_end": "2026-08-05",
+      "test_start": "2026-08-15",
+      "test_end": "2026-10-22",
+      "baseline": "仅训练集同产品/币种/单位成交价中位数",
+      "baseline_price": 7.775,
+      "baseline_mae": 0.79,
+      "model_mae": 0.4027656433946146,
+      "comparison": "模型MAE较低",
+      "ranges": {
+        "quantity": [
+          11.0,
+          488.0
+        ],
+        "historical_unit_cost": [
+          5.17,
+          6.94
+        ]
+      }
+    },
+    "[\"P_MY_004\", \"MYR\", \"千克\"]": {
+      "status": "已训练",
+      "train_count": 59,
+      "test_count": 21,
+      "train_start": "2025-11-02",
+      "train_end": "2026-08-05",
+      "test_start": "2026-08-14",
+      "test_end": "2026-10-17",
+      "baseline": "仅训练集同产品/币种/单位成交价中位数",
+      "baseline_price": 16.36,
+      "baseline_mae": 1.4614285714285715,
+      "model_mae": 0.686625786548767,
+      "comparison": "模型MAE较低",
+      "ranges": {
+        "quantity": [
+          21.0,
+          498.0
+        ],
+        "historical_unit_cost": [
+          10.97,
+          14.57
         ]
       }
     }

@@ -431,7 +431,7 @@ def _validation_reason(value):
         "不能为空": "data.error.empty",
         "必须是有限的非负数；交易数量必须大于 0": "data.error.invalid_number",
         "必须为有效日期 YYYY-MM-DD": "data.error.invalid_date",
-        "仅支持 CNY、USD、EUR，不自动换汇": "data.error.currency",
+        "仅支持 CNY、USD、EUR、MYR，不自动换汇": "data.error.currency",
         "引用的产品不存在": "data.error.product_missing",
         "不能超过现有数量": "data.error.reserved_stock",
         "引用的客户不存在": "data.error.customer_missing",

@@ -24,6 +24,15 @@ class LocalizationTests(unittest.TestCase):
             rendered = i18n.translate("data.current_count.other", lang=locale, count=3)
             self.assertIn("3", rendered)
 
+    def test_myr_currency_validation_message_is_localized(self):
+        reason = "仅支持 CNY、USD、EUR、MYR，不自动换汇"
+        for locale in ("zh-CN", "en", "ms-MY"):
+            with patch.object(i18n, "language", return_value=locale):
+                self.assertEqual(
+                    i18n._validation_reason(reason),
+                    i18n.translate("data.error.currency", lang=locale),
+                )
+
     def test_pluralization_and_display_formatting(self):
         self.assertEqual(i18n.t_plural("data.current_count", 1, lang="en"), "1 valid record")
         self.assertEqual(i18n.t_plural("data.current_count", 2, lang="en"), "2 valid records")

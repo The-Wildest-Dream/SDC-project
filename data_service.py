@@ -13,6 +13,7 @@ SCHEMAS = {
 }
 NUMBERS = {"单位材料成本", "单位人工成本", "单位制造费用", "数量", "成交单价", "当时单位成本", "现有数量", "已预留数量"}
 DATES = {"成本更新时间", "合作开始日期", "订单日期", "约定付款日期", "实际付款日期", "更新时间"}
+SUPPORTED_CURRENCIES = {"CNY", "USD", "EUR", "MYR"}
 
 
 def csv_bytes(kind, rows):
@@ -74,8 +75,8 @@ def parse_csv(kind, content):
                         date.fromisoformat(value)
                     except ValueError:
                         error(line, field, "必须为有效日期 YYYY-MM-DD")
-                elif field == "币种" and value not in {"CNY", "USD", "EUR"}:
-                    error(line, field, "仅支持 CNY、USD、EUR，不自动换汇")
+                elif field == "币种" and value not in SUPPORTED_CURRENCIES:
+                    error(line, field, "仅支持 CNY、USD、EUR、MYR，不自动换汇")
             key = row[SCHEMAS[kind][0]]
             if key in seen:
                 error(line, SCHEMAS[kind][0], f"重复ID：{key}")

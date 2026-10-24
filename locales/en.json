@@ -45,7 +45,7 @@
   "data.error.duplicate_header": "Duplicate column names found", "data.error.required_field": "Required field is missing",
   "data.error.unknown_field": "Unknown field. Use the sample CSV format.", "data.error.column_count": "Column count does not match the header",
   "data.error.empty": "Cannot be blank", "data.error.invalid_number": "Must be a finite non-negative number; transaction quantity must be greater than 0",
-  "data.error.invalid_date": "Must be a valid date in YYYY-MM-DD format", "data.error.currency": "Only CNY, USD, and EUR are supported; no currency conversion is performed",
+  "data.error.invalid_date": "Must be a valid date in YYYY-MM-DD format", "data.error.currency": "Only CNY, USD, EUR, and MYR are supported; no currency conversion is performed",
   "data.error.product_missing": "Referenced product does not exist", "data.error.reserved_stock": "Cannot exceed on-hand quantity",
   "data.error.customer_missing": "Referenced customer does not exist", "data.error.customer_date": "Cannot be earlier than the customer start date",
   "data.error.product_mismatch": "Must match the referenced product; units and currencies are not converted",

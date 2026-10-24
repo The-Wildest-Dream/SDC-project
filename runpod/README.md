@@ -7,25 +7,54 @@ neither required nor claimed.
 
 ## Build
 
-Run these commands from the repository root. The build context must be the
-repository root because the image copies the existing inference module and
-trained model artifact:
+Run these commands from the repository root after training. The build context
+must be the repository root because the image copies the project's inference
+module, updated trusted model, and matching evaluation metadata. Use a new,
+versioned tag so it is clear which artifact the endpoint is serving:
 
 ```bash
-docker build -f runpod/Dockerfile -t <your-registry>/sdc-price-worker:latest .
-docker push <your-registry>/sdc-price-worker:latest
+export REGISTRY_HOST=YOUR_REGISTRY_HOST
+export IMAGE_NAMESPACE=YOUR_REGISTRY_NAMESPACE
+export IMAGE_NAME=sdc-price-worker
+export IMAGE_TAG="${REGISTRY_HOST}/${IMAGE_NAMESPACE}/${IMAGE_NAME}:myr-20261024-v1"
+docker login "$REGISTRY_HOST"
+docker build -f runpod/Dockerfile -t "$IMAGE_TAG" .
+docker push "$IMAGE_TAG"
 ```
 
-Create a RunPod Serverless endpoint that uses the pushed image. Its startup
-command is already configured as `python /app/runpod/handler.py`; no model
-retraining or database access is needed. Choose a CPU-capable worker. The
-example `runpod/test_input.json` is a valid request for the checked-in model.
-In the RunPod console, create a Serverless Endpoint, select the pushed container
-image, and set a worker count/idle policy appropriate for your demo. Copy the
-endpoint ID for the Replit-side client. The worker uses the image's default
-startup command; it does not need an API key or PostgreSQL connection.
+For Docker Hub, use `REGISTRY_HOST=docker.io` and your account or organization
+as `IMAGE_NAMESPACE`. For another registry, use its hostname and namespace.
+Use the registry's normal interactive login; do not put credentials in the
+project. In RunPod, open the existing Serverless Endpoint, edit its container
+image to the exact `IMAGE_TAG` pushed above, save the endpoint template, and
+deploy/restart the endpoint so workers are recreated from that image. Keep its
+existing handler/start command (`python /app/runpod/handler.py`) and CPU-capable
+worker configuration. Do not create or replace an endpoint unless that is
+intentional. If you instead create a new endpoint, update the Replit
+`RUNPOD_ENDPOINT_ID` Secret to that endpoint ID; do not put credentials in this
+repository. This image contains the newly trained MYR and existing CNY groups.
 
-Example request body sent to the endpoint:
+After redeployment, `runpod/test_input.json` remains a supported CNY request;
+`runpod/test_input_myr.json` exercises the MYR model group.
+
+## Replit handoff
+
+In the Replit Shell, from the project root, run:
+
+```bash
+python generate_myr_data.py
+python train_price_model.py
+```
+
+Review `models/historical_price/evaluation.json` and the four MYR CSVs. The
+Streamlit app loads the resulting local model artifact from this workspace.
+Keep the existing Replit `RUNPOD_API_KEY` and `RUNPOD_ENDPOINT_ID` Secrets
+unchanged when updating the image on the same endpoint. Do not print their
+values. After changing the Python code or model artifact, republish the app
+manually if you want the published app to use this version. A newly created
+RunPod endpoint requires updating only the endpoint-ID Secret.
+
+Example existing CNY request body sent to the endpoint:
 
 ```json
 {
@@ -63,6 +92,11 @@ The response includes a job `id`. Poll
 Authorization header until its status is `COMPLETED`; inspect the `output`
 object for the prediction or an unavailable reason. This remote test submits a
 billable Serverless job.
+
+To verify MYR after the endpoint image has been updated, use the same request
+and polling steps with `--data @runpod/test_input_myr.json`. This makes a real,
+potentially billable Serverless inference request; do not run it against the
+old image and treat an unsupported MYR result as a model failure.
 
 ## Replit-side client
 

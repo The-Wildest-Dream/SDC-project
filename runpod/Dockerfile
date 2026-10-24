@@ -13,6 +13,7 @@ RUN python -m pip install --no-cache-dir -r /app/runpod/requirements.txt
 # inference code and trusted, checked-in model artifact.
 COPY price_model.py /app/price_model.py
 COPY models/historical_price/model.joblib /app/models/historical_price/model.joblib
+COPY models/historical_price/evaluation.json /app/models/historical_price/evaluation.json
 COPY runpod/handler.py /app/runpod/handler.py
 
 CMD ["python", "/app/runpod/handler.py"]
