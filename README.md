@@ -1,4 +1,4 @@
-[SDC_README_complete.md](https://github.com/user-attachments/files/33901716/SDC_README_complete.md)# SME Manufacturing Quotation Assistant
+# SME Manufacturing Quotation Assistant
 
 **An AI-assisted quotation decision-support prototype for small and medium-sized manufacturing enterprises.** Built for SDC Hackathon Domain 2, it combines production-cost analysis, historical transaction-price references, a remotely hosted prediction model, and a simulated quotation approval workflow. The system supports human decisions; it does not automatically determine optimal selling prices or guarantee profitability.
 
