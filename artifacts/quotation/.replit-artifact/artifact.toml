@@ -15,6 +15,13 @@ localPort = 23876
 run = "sh start.sh"
 
 [services.production]
+
+[services.production.build]
+args = ["uv", "sync", "--frozen"]
+
+[services.production.build.env]
+UV_PROJECT_ENVIRONMENT = ".pythonlibs"
+
 [services.production.run]
 args = ["sh", "start.sh"]
 

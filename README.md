@@ -54,7 +54,7 @@ Implementation claims below describe repository code; they are not all claims of
 
 ## Demo Walkthrough
 
-Prerequisites: Python 3.13 as declared in `pyproject.toml`, the dependencies in `requirements.txt`, and a PostgreSQL `DATABASE_URL`.
+Prerequisites: Python 3.13, `uv`, the locked dependencies in `pyproject.toml` and `uv.lock`, and a PostgreSQL `DATABASE_URL`.
 
 1. Initialize a development database and load the synthetic demo data as described in [Setup and Run](#setup--run).
 2. Start the Streamlit application and choose a demo role in the sidebar. Role switching is not authentication or production-grade authorization.
@@ -104,10 +104,10 @@ flowchart LR
 
 ## Setup and Run
 
-Install Python 3.13 and project dependencies:
+Install Python 3.13 and `uv`, then sync the locked project dependencies:
 
 ```bash
-python -m pip install -r requirements.txt
+uv sync --frozen
 ```
 
 Configure `DATABASE_URL` using the Replit database/environment configuration. Do not place credentials in source files, README, or logs. Then, in a **development** environment:
@@ -162,7 +162,7 @@ The repository is configured to run the Streamlit app in a Replit workflow and d
 
 Replit Agent was used in this workspace for implementation and documentation assistance. ChatGPT and other tools: TODO — team confirmation required. Human review/sign-off of every generated or translated section: TODO — team confirmation required.
 
-Runtime dependencies listed in `requirements.txt` include Streamlit, SQLAlchemy, psycopg, scikit-learn, joblib, and pandas. Exact package versions are listed in that file. Their individual license notices have not been independently inventoried here; retain third-party notices and consult package metadata before redistribution.
+Runtime dependencies are declared in `pyproject.toml` and pinned by `uv.lock`, including Streamlit, SQLAlchemy, psycopg, scikit-learn, joblib, and pandas. Their individual license notices have not been independently inventoried here; retain third-party notices and consult package metadata before redistribution.
 
 ## Known Limitations and Future Improvements
 
