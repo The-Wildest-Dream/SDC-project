@@ -25,7 +25,7 @@
 | **Replit Project** | [SME-Quotation-Evaluation-System](https://replit.com/@realityfordream/SME-Quotation-Evaluation-System) |
 | **Live Demo** | [SME Manufacturing Quotation Assistant](https://zhong-xiao-zhi-zao-qi-ye-bao-jie-fu-zhu-xi-tong.replit.app/) |
 | **RunPod Endpoint** | https://api.runpod.ai/v2/4qbw60i5ghyhfo |
-| **Slide Deck** | **TODO — add a public viewing link** |
+| **Slide Deck** | [**link**](https://xmueducn-my.sharepoint.com/:p:/g/personal/ait2609083_xmu_edu_my/IQDxgkpp6H8MQKdCOZ0hwFvVAWOll2I7Hi-Hdqj3-wUncDk?e=VYBUpr) |
 | **Demo Video** | **TODO — add the YouTube pitch/demo video link** |
 
 ## Overview
