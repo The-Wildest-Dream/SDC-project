@@ -66,10 +66,9 @@ billable Serverless job.
 
 ## Replit-side client
 
-`runpod_client.py` is a standalone client and is intentionally not connected to
-the current Streamlit page. To prepare a later integration, configure
+The historical price page calls `runpod_client.predict_price(...)`. Configure
 `RUNPOD_API_KEY` through Replit Secrets and set `RUNPOD_ENDPOINT_ID` as an
-environment variable. Optional settings are:
+environment variable in the Replit app. Optional settings are:
 
 - `RUNPOD_TOTAL_TIMEOUT_SECONDS` (default 180)
 - `RUNPOD_REQUEST_TIMEOUT_SECONDS` (default 30)
@@ -77,11 +76,11 @@ environment variable. Optional settings are:
 
 Call `runpod_client.predict_price(...)`. It returns the existing application's
 three-item `(value, reason, metadata)` shape. The returned metadata includes
-`prediction_source`: `runpod`, `local_fallback`, or `unavailable`. The local
-fallback is explicit through the `allow_local_fallback` argument (default
-`True`); pass `False` to surface RunPod unavailability instead. Missing RunPod
-configuration never changes the behavior of the production page because the
-client is not wired into it.
+`prediction_source`: `runpod`, `local_fallback`, or `unavailable`. The current
+page explicitly enables local fallback so a temporary endpoint failure does
+not block the quotation workflow; the interface labels the source. Pass
+`allow_local_fallback=False` in verification code to ensure the result is
+actually remote.
 
 ## Tests
 

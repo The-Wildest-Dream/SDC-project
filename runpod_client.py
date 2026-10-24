@@ -1,4 +1,4 @@
-"""Optional RunPod client; it is deliberately not wired into the Streamlit app."""
+"""RunPod client used by the Streamlit historical price prediction page."""
 from __future__ import annotations
 
 import json
@@ -132,7 +132,9 @@ def _local_result(
 
     value, reason, metadata = local_predict_price(*args)
     result_metadata = dict(metadata or {})
-    result_metadata["prediction_source"] = "local_fallback"
+    result_metadata["prediction_source"] = (
+        "local_fallback" if value is not None else "unavailable"
+    )
     if runpod_error:
         result_metadata["runpod_error"] = runpod_error
     return value, reason, result_metadata
@@ -180,12 +182,23 @@ def predict_price(
       RUNPOD_POLL_INTERVAL_SECONDS (default 2)
     """
     config = os.environ if env is None else env
+    try:
+        model_quantity = float(quantity)
+        model_cost = float(cost)
+    except (TypeError, ValueError, OverflowError):
+        error = "RunPod prediction inputs must contain numeric quantity and cost"
+        if allow_local_fallback:
+            return _local_result(
+                (product, currency, unit, quantity, cost, day), runpod_error=error
+            )
+        return None, error, {"prediction_source": "unavailable"}
+
     inputs = {
         "product": product,
         "currency": currency,
         "unit": unit,
-        "quantity": quantity,
-        "cost": cost,
+        "quantity": model_quantity,
+        "cost": model_cost,
         "day": str(day)[:10],
     }
     api_key = config.get("RUNPOD_API_KEY", "").strip()

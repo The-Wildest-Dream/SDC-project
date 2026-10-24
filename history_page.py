@@ -1,5 +1,6 @@
 from datetime import date
 from decimal import ROUND_CEILING
+from time import monotonic
 
 import streamlit as st
 
@@ -11,7 +12,8 @@ from i18n import (
     localize_json, localize_records, status_label, t,
 )
 from inquiry_service import list_inquiries
-from price_model import group_key, predict_price
+from price_model import group_key
+from runpod_client import predict_price
 from quotation_rules import COSTS, calculate, check_price, number, percentile
 from quotation_ui import reminders, show_costs
 from shared_data import get_data
@@ -118,10 +120,28 @@ model_value, model_reason, model_meta = (
 if all(s["costs"].get(field) not in ("", None) for field in COSTS[:3]):
     # Keep the existing feature definition: production costs exclude batch allocations.
     production_cost = sum(number(s["costs"][field]) for field in COSTS[:3])
-    model_value, model_reason, model_meta = predict_price(
-        r["product_id"], r["currency"], r["unit"], r["quantity"],
-        production_cost, r["created_at"].date(),
+    prediction_key = (
+        identifier, r["product_id"], r["currency"], r["unit"], r["quantity"],
+        production_cost, r["created_at"].date().isoformat(),
     )
+    cached_prediction = st.session_state.get("history_prediction_cache")
+    if (
+        cached_prediction
+        and cached_prediction["key"] == prediction_key
+        and monotonic() - cached_prediction["created_at"] < 60
+    ):
+        model_value, model_reason, model_meta = cached_prediction["result"]
+    else:
+        model_value, model_reason, model_meta = predict_price(
+            r["product_id"], r["currency"], r["unit"], r["quantity"],
+            production_cost, r["created_at"].date(),
+            allow_local_fallback=True,
+        )
+        st.session_state["history_prediction_cache"] = {
+            "key": prediction_key,
+            "created_at": monotonic(),
+            "result": (model_value, model_reason, model_meta),
+        }
 if model_value is None:
     st.warning(t("history.model_unavailable", reason=display_text(model_reason)))
 else:
@@ -132,6 +152,13 @@ else:
     st.caption(display_text(model_reason))
     if not result["missing"] and number(model_value) < result["floor"]:
         st.warning(t("history.model_below_floor"))
+prediction_source = (model_meta or {}).get("prediction_source", "unavailable")
+if prediction_source not in {"runpod", "local_fallback", "unavailable"}:
+    prediction_source = "unavailable"
+st.caption(t(
+    "history.prediction_source",
+    source=t(f"history.prediction_source.{prediction_source}"),
+))
 st.caption(t("history.distinction"))
 
 if finance:

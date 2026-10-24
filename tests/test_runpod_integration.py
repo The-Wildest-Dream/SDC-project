@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 import importlib.util
 import unittest
+from decimal import Decimal
 from unittest.mock import patch
 
 import runpod_client
@@ -103,6 +104,33 @@ class ClientTests(unittest.TestCase):
         self.assertIn("/status/job-123", sent[1][0].full_url)
         self.assertEqual(sent[0][0].get_header("Authorization"), "Bearer test-key")
 
+    def test_client_serializes_database_decimal_inputs(self):
+        worker_output = handler({"input": SAMPLE})
+        captured = {}
+
+        def opener(request, timeout):
+            captured.update(json.loads(request.data.decode("utf-8")))
+            return _FakeResponse({
+                "id": "job-decimal",
+                "status": "COMPLETED",
+                "output": worker_output,
+            })
+
+        value, _reason, meta = runpod_client.predict_price(
+            SAMPLE["product"], SAMPLE["currency"], SAMPLE["unit"],
+            Decimal("100"), Decimal("50"), SAMPLE["day"],
+            env={
+                "RUNPOD_API_KEY": "test-key",
+                "RUNPOD_ENDPOINT_ID": "endpoint-test",
+            },
+            allow_local_fallback=False,
+            opener=opener,
+        )
+        self.assertAlmostEqual(value, worker_output["prediction"], places=10)
+        self.assertEqual(meta["prediction_source"], "runpod")
+        self.assertEqual(captured["input"]["quantity"], 100.0)
+        self.assertEqual(captured["input"]["cost"], 50.0)
+
     def test_client_uses_explicit_local_fallback_on_missing_config(self):
         value, _reason, meta = runpod_client.predict_price(
             SAMPLE["product"], SAMPLE["currency"], SAMPLE["unit"],
@@ -123,6 +151,16 @@ class ClientTests(unittest.TestCase):
             SAMPLE["quantity"], SAMPLE["cost"], SAMPLE["day"],
             env={}, allow_local_fallback=False,
         )
+        self.assertIsNone(value)
+        self.assertEqual(meta["prediction_source"], "unavailable")
+
+    def test_unavailable_local_fallback_is_not_mislabeled(self):
+        with patch("price_model.predict_price", return_value=(None, "not applicable", None)):
+            value, _reason, meta = runpod_client.predict_price(
+                SAMPLE["product"], SAMPLE["currency"], SAMPLE["unit"],
+                SAMPLE["quantity"], SAMPLE["cost"], SAMPLE["day"],
+                env={},
+            )
         self.assertIsNone(value)
         self.assertEqual(meta["prediction_source"], "unavailable")
 
