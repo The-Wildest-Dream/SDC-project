@@ -19,8 +19,8 @@ A Python and Streamlit demonstration application for small and medium-sized manu
 | Resource | Link / Status |
 |---|---|
 | GitHub Repository | [The-Wildest-Dream/SDC-project](https://github.com/The-Wildest-Dream/SDC-project) |
-| Replit Project | TODO — provide the canonical project URL |
-| Live Demo | TODO — provide a published application URL |
+| Replit Project | [TODO — provide the canonical project URL](https://replit.com/@realityfordream/SME-Quotation-Evaluation-System) |
+| Live Demo | [TODO — provide a published application URL](https://zhong-xiao-zhi-zao-qi-ye-bao-jie-fu-zhu-xi-tong.replit.app/) |
 | Slide Deck | TODO |
 | YouTube Pitch / Demo Video | TODO |
 | RunPod Endpoint | Not used by this application; confirm whether the competition requires one |
