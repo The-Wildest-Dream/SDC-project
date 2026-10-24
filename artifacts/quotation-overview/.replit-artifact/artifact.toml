@@ -1,0 +1,29 @@
+kind = "video"
+videoAspectRatio = "16:9"
+previewPath = "/quotation-overview/"
+title = "制造企业报价辅助系统"
+description = "An animated overview of the synthetic-data manufacturing quotation system."
+version = "1.0.0"
+id = "artifacts/quotation-overview"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/quotation-overview/" ]
+localPort = 26230
+
+[services.development]
+run = "pnpm --filter @workspace/quotation-overview run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/quotation-overview", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/quotation-overview/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "26230"
+BASE_PATH = "/quotation-overview/"
