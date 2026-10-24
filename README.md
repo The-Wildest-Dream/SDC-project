@@ -77,3 +77,8 @@ Replit 中运行 `artifacts/quotation: web` 工作流后打开“制造企业报
 
 运行计算逻辑测试：`python -m unittest discover -s tests -v`。
 启动脚本和预览服务配置沿用原有设置；新增SQLAlchemy及psycopg 3依赖。
+
+## License
+
+This project is licensed under the Apache License 2.0.
+See the [LICENSE](LICENSE) file for details.
