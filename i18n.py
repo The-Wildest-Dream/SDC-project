@@ -1,6 +1,8 @@
 """Centralized, session-scoped translations for the Streamlit interface."""
 from __future__ import annotations
 
+from datetime import date, datetime
+from decimal import Decimal, InvalidOperation
 import json
 import logging
 from pathlib import Path
@@ -45,11 +47,15 @@ FIELD_KEYS = {
     "本次值": "field.current_value", "来源更新时间": "field.source_updated",
     "更新时间": "field.updated_at", "编号": "field.quote_id", "产品": "field.product",
     "需求": "field.demand", "可用库存": "field.available_stock",
-    "报价ID": "field.quote_id", "询价ID": "field.inquiry_id", "版本": "field.version",
+    "报价ID": "field.quote_id", "询价ID": "field.inquiry_id",
+    "询价编号": "field.inquiry_id", "版本": "field.version",
     "状态": "field.status", "单价": "field.unit_price", "总价": "field.total_price",
     "有效期": "field.valid_until", "交付日期": "field.delivery_date",
     "预付款比例": "field.prepayment_pct", "尾款账期天数": "field.balance_term",
     "年资金成本率": "field.annual_funding_rate", "标记": "field.demo_notice",
+    "整批固定费用": "field.batch_fixed_cost",
+    "卖方承担的整批物流费用": "field.seller_logistics_cost",
+    "说明": "common.description",
     "所属模拟销售": "field.demo_sales", "创建": "field.created_at",
     "更新": "field.updated_at", "审批决定": "field.decision", "审批意见": "field.approval_comment",
     "操作人": "field.actor", "操作": "field.action", "时间": "field.time",
@@ -69,6 +75,12 @@ KIND_KEYS = {"产品": "data.kind.products", "客户": "data.kind.customers",
 STATUS_KEYS = {"draft": "state.draft", "pending": "state.pending",
                "approved": "state.approved", "rejected": "state.rejected"}
 ROLE_KEYS = {"销售甲": "role.sales_a", "销售乙": "role.sales_b", "经理": "role.manager"}
+FEATURE_KEYS = {
+    "quantity": "history.model.quantity",
+    "historical_unit_cost": "history.model.historical_cost",
+    "date_ordinal": "history.model.date_ordinal",
+    "month": "history.model.month",
+}
 
 _TEXT_KEYS = {
     "无到期样本": "data.no_due_sample",
@@ -88,7 +100,7 @@ _EXPIRY_PATTERNS = (
      "expiry.material_change"),
     (re.compile(r"供应商报价至(?P<date>\d{4}-\d{2}-\d{2})；销售报价不超过该日期"),
      "expiry.supplier_until"),
-    (re.compile(r"(?P<field>数量|当时单位成本)超出该组训练范围\[(?P<low>-?\d+(?:\.\d+)?), (?P<high>-?\d+(?:\.\d+)?)\]。"),
+    (re.compile(r"(?P<field>quantity|historical_unit_cost)超出该组训练范围\[(?P<low>-?\d+(?:\.\d+)?), (?P<high>-?\d+(?:\.\d+)?)\]。"),
      "history.model_range"),
 )
 ERROR_KEYS = {
@@ -105,6 +117,8 @@ ERROR_KEYS = {
     "有效期规则须满足：1 ≤ 默认天数 ≤ 最长天数，成本过期阈值大于0。": "error.expiry_range",
     "报价不存在。": "error.quote_missing",
     "报价有效期已过，禁止提交。": "error.quote_expired",
+    "该询价已提交或关闭，不可重复提交。": "history.not_submit",
+    "报价已过有效期，禁止提交。": "history.quote_expired",
     "该询价已有报价或已提交，请在报价记录中修改草稿或创建新版本。": "error.quote_exists",
     "保存报价失败，数据库事务已回滚。": "error.quote_save",
     "只有草稿可修改。待审批版本已锁定，已结束版本须创建新版本。": "error.draft_only",
@@ -134,6 +148,7 @@ ERROR_KEYS = {
     "采购数量必须为大于 0 的整数。": "error.integer_quantity",
     "目标毛利率必须大于或等于 0%，且小于 100%。": "error.target_margin_range",
     "各项成本和费用不能为负数。": "error.negative_cost",
+    "只能修改或提交自己的草稿。": "error.own_draft_only",
 }
 
 
@@ -184,7 +199,12 @@ def initialize_language():
 
 
 def language():
-    return normalize_language(st.session_state.get("ui_language", "zh-CN"))
+    return language_for(st.session_state)
+
+
+def language_for(session_state):
+    """Resolve language from an individual Streamlit session state, never module-global state."""
+    return normalize_language(session_state.get("ui_language", "zh-CN"))
 
 
 def translate(key, lang=None, **values):
@@ -210,6 +230,65 @@ def t(key, **values):
     return translate(key, **values)
 
 
+def t_plural(key, count, lang=None, **values):
+    """Small, explicit plural helper: English distinguishes one/other; zh and ms use other."""
+    numeric_count = int(count)
+    lang = normalize_language(lang or language())
+    category = "one" if lang == "en" and numeric_count == 1 else "other"
+    return translate(f"{key}.{category}", lang=lang, count=numeric_count, **values)
+
+
+def format_number(value, places=None, lang=None):
+    """Format a display-only number without changing stored or calculated values."""
+    try:
+        number = Decimal(str(value))
+        if not number.is_finite():
+            return str(value)
+        lang = normalize_language(lang or language())
+        decimal_mark, group_mark = {
+            "zh-CN": (".", ","), "en": (".", ","), "ms-MY": (".", ","),
+        }[lang]
+        pattern = f",.{places}f" if places is not None else ",f"
+        rendered = format(number, pattern)
+        integer, separator, fraction = rendered.partition(".")
+        integer = integer.replace(",", group_mark)
+        return integer + (decimal_mark + fraction if separator else "")
+    except (InvalidOperation, ValueError, TypeError):
+        return str(value)
+
+
+def format_date(value, lang=None):
+    """Localize display of dates while retaining the original stored date value."""
+    try:
+        if isinstance(value, datetime):
+            day = value.date()
+            clock = value.strftime("%H:%M:%S")
+            zone = value.strftime("%z")
+        elif isinstance(value, date):
+            day, clock, zone = value, "", ""
+        else:
+            text = str(value)
+            day = date.fromisoformat(text[:10])
+            has_time = len(text) >= 19 and text[10] in ("T", " ")
+            clock = text[11:19] if has_time else ""
+            zone = text[19:] if has_time else ""
+            if zone == "Z":
+                zone = "+00:00"
+        lang = normalize_language(lang or language())
+        if lang == "zh-CN":
+            rendered = day.isoformat()
+        elif lang == "en":
+            rendered = f"{day.day} {day.strftime('%b')} {day.year}"
+        else:
+            months = ("Jan", "Feb", "Mac", "Apr", "Mei", "Jun", "Jul", "Ogo", "Sep", "Okt", "Nov", "Dis")
+            rendered = f"{day.day} {months[day.month - 1]} {day.year}"
+        if zone and re.fullmatch(r"[+-]\d{4}", zone):
+            zone = f"{zone[:3]}:{zone[3:]}"
+        return f"{rendered} {clock}{zone}".strip()
+    except (TypeError, ValueError):
+        return str(value)
+
+
 def field_label(field):
     key = FIELD_KEYS.get(field)
     if key:
@@ -228,9 +307,19 @@ def status_label(status):
     return t(key) if key else t("i18n.missing")
 
 
+def inquiry_status_label(status):
+    key = {"draft": "inquiry.draft", "submitted": "inquiry.submitted", "closed": "inquiry.closed"}.get(status)
+    return t(key) if key else t("i18n.missing")
+
+
 def role_label(role):
     key = ROLE_KEYS.get(role)
     return t(key) if key else role
+
+
+def feature_label(feature):
+    key = FEATURE_KEYS.get(feature)
+    return t(key) if key else t("i18n.missing")
 
 
 def display_text(value):
@@ -241,13 +330,33 @@ def display_text(value):
     for pattern, key in _EXPIRY_PATTERNS:
         match = pattern.fullmatch(value)
         if match:
-            return t(key, **match.groupdict())
+            values = match.groupdict()
+            if key == "history.model_range":
+                values["field"] = t(
+                    "history.model.quantity"
+                    if values["field"] == "quantity"
+                    else "history.model.historical_cost"
+                )
+            return t(key, **values)
     exact = {
         "缺少成本更新时间，使用企业默认有效期": "expiry.cost_missing",
         "无原材料价格变化数据，按默认值": "expiry.material_missing",
         "无供应商报价到期日期，使用企业默认规则": "expiry.supplier_missing",
         "客户表现触发企业已启用的经理复核及最长3天规则": "expiry.customer_policy",
         "客户有逾期记录，仅提示经理复核；当前企业政策未允许其影响有效期": "expiry.customer_review",
+        "模型文件缺失，请先离线训练；继续使用历史参考和成本计算。": "history.model_file_missing",
+        "模型与当前scikit-learn版本不一致，请重新训练。": "history.model_version_mismatch",
+        "该产品/币种/单位未覆盖或训练、测试样本不足。": "history.model_group_missing",
+        "预测输入缺失或不是有限数值。": "history.model_invalid_input",
+        "询价日期超出适用窗口（训练起日到训练末日后180天）。": "history.model_date_outside",
+        "模型输出无效，继续使用历史参考和成本计算。": "history.model_invalid_output",
+        "模型无法加载或预测失败，请检查训练产物；继续使用历史参考和成本计算。": "history.model_load_failed",
+        "仅为历史成交单价预测，不是利润最优价格或客户购买概率。": "history.model_limit",
+        "样本不足": "history.model_status_insufficient",
+        "仅训练集同产品/币种/单位成交价中位数": "history.baseline_description",
+        "模型MAE较低": "history.model_better_baseline",
+        "模型未优于基线": "history.model_not_better",
+        "无供应商报价到期日期，使用企业默认规则": "expiry.supplier_missing",
     }
     return t(exact[value]) if value in exact else value
 
@@ -258,6 +367,9 @@ def display_error(error):
     if message.startswith("关键成本缺失，禁止提交审批："):
         names = message.split("：", 1)[1]
         return t("error.missing_costs", fields="、".join(field_label(x) for x in names.split("、")))
+    if message.startswith("当前模拟角色不能执行此操作，需要"):
+        role = message.split("需要", 1)[1].rstrip("。")
+        return t("error.role_required", role=role_label(role))
     key = ERROR_KEYS.get(message)
     if key:
         return t(key)
@@ -272,10 +384,14 @@ def _display_cell(column, value):
         return field_label(value)
     if column == "原因":
         return _validation_reason(value)
-    if column == "状态" and value in STATUS_KEYS:
+    if column in ("状态", "status") and value in STATUS_KEYS:
         return status_label(value)
-    if column == "审批决定" and value in STATUS_KEYS:
+    if column in ("审批决定", "decision") and value in STATUS_KEYS:
         return status_label(value)
+    if column == "decision" and value == "submitted":
+        return t("audit.decision.submitted")
+    if column == "status" and value == "已训练":
+        return t("history.model_status_trained")
     if column in ("样本提示", "按时付款率"):
         if value == "无到期样本":
             return t("data.no_due_sample")
@@ -283,12 +399,27 @@ def _display_cell(column, value):
             return t("data.payment_sample_low")
         if value == "仅为模拟样本描述":
             return t("data.synthetic_sample")
-    if column == "操作" and value in ("quote_approved", "quote_rejected", "quote_submitted",
-                                    "quote_draft_saved", "quote_draft_updated", "quote_revised"):
+    if column in ("操作", "action") and value in (
+        "quote_approved", "quote_rejected", "quote_submitted",
+        "quote_draft_saved", "quote_draft_updated", "quote_revised",
+    ):
         return t("audit.action." + value.removeprefix("quote_"))
-    if column == "操作人":
+    if column in ("操作人", "actor", "owner"):
         return role_label(value)
-    return display_text(value)
+    date_columns = {
+        "成本更新时间", "合作开始日期", "订单日期", "约定付款日期",
+        "实际付款日期", "约定账期", "更新时间", "来源更新时间", "数据覆盖时间", "创建", "更新",
+        "created_at", "updated_at", "time",
+    }
+    if column in date_columns and value not in ("", None):
+        if column == "数据覆盖时间" and " 至 " in str(value):
+            left, right = str(value).split(" 至 ", 1)
+            return f"{format_date(left)} {t('common.range_separator')} {format_date(right)}"
+        return format_date(value)
+    if column in ("comment", "审批意见") and value == "模拟角色提交，等待经理审批":
+        return t("audit.submitted_comment")
+    # Product/customer names and free-text notes are user/business data, not UI copy.
+    return value
 
 
 def _validation_reason(value):
@@ -322,7 +453,11 @@ def localize_records(rows):
     for row in rows:
         translated = {}
         for key, value in row.items():
-            label = field_label(key) if key in FIELD_KEYS else key
+            if key in FIELD_KEYS:
+                label = field_label(key)
+            else:
+                _logger.warning("Unmapped table display field: %s", key)
+                label = t("i18n.missing")
             translated[label] = _display_cell(key, value)
         output.append(translated)
     return output
@@ -344,22 +479,75 @@ _JSON_KEYS = {
     "policy": "json.policy", "default_days": "json.default_days", "max_days": "json.max_days",
     "stale_days": "json.stale_days", "material_threshold_pct": "json.material_threshold",
     "customer_review_affects_expiry": "json.customer_review_policy",
+    "owner": "field.demo_sales", "unit_cost": "json.unit_cost",
+    "floor": "json.cost_floor", "allocation": "json.batch_allocation",
+    "funding_cost": "finance.cost", "funding_unit": "json.funding_unit",
+    "immediate_unit": "finance.immediate", "conditional_unit": "finance.conditional",
+    "difference_unit": "finance.difference", "advance_amount": "finance.advance",
+    "immediate_reference_total": "json.immediate_total",
     "筛选开始日期": "history.start_date", "筛选结束日期": "history.end_date",
     "数量下限": "history.quantity_min", "数量上限": "history.quantity_max",
     "匹配笔数": "field.match_count", "订单ID": "field.order_id",
     "历史价格快照": "field.historical_prices", "口径": "history.method",
     "模型预测": "history.model", "模型说明": "history.model_note",
     "模型数据版本": "history.model_version", "继承来源版本": "json.revised_from",
+    "训练时间": "history.trained_at", "data_version": "history.data_version",
+    "features": "history.input_features", "groups": "history.model_groups",
+    "sklearn_version": "history.sklearn_version", "train_rows": "history.train_rows",
+    "test_rows": "history.test_rows", "mae": "history.model_mae",
+    "baseline_mae": "history.baseline_mae", "ranges": "history.model_ranges",
+    "train_count": "history.train_rows", "test_count": "history.test_rows",
+    "baseline": "history.baseline", "baseline_price": "history.baseline_price",
+    "model_mae": "history.model_mae", "comparison": "history.comparison",
+    "整批固定费用": "field.batch_fixed_cost",
+    "卖方承担的整批物流费用": "field.seller_logistics_cost",
+    "说明": "common.description",
+    "train_start": "history.train_start", "train_end": "history.train_end",
+    "test_start": "history.test_start", "test_end": "history.test_end",
+    "status": "field.status", "quantity": "history.model.quantity",
+    "historical_unit_cost": "history.model.historical_cost",
+    "date_ordinal": "history.model.date_ordinal", "month": "history.model.month",
+    "模型预测": "history.model", "筛选范围": "history.method",
+    "材料": "field.material_cost", "人工": "field.labor_cost",
+    "制造费用": "field.overhead_cost", "成本修改理由": "field.reason",
+    "成本更新时间": "field.cost_updated", "成本录入时间": "field.source_updated",
+    "预付款比例": "field.prepayment_pct", "尾款账期天数": "field.balance_term",
+    "年资金成本率": "field.annual_funding_rate", "有效期规则": "field.rule_version",
+    "客户付款表现摘要": "field.payment_performance",
 }
 
 
 def localize_json(value):
     if isinstance(value, dict):
-        return {
-            t(_JSON_KEYS[key]) if key in _JSON_KEYS else field_label(key) if key in FIELD_KEYS else key:
-            localize_json(item)
-            for key, item in value.items()
-        }
+        result = {}
+        for key, item in value.items():
+            if key in _JSON_KEYS:
+                label = t(_JSON_KEYS[key])
+            elif key in FIELD_KEYS:
+                label = field_label(key)
+            else:
+                _logger.warning("Unmapped JSON display field: %s", key)
+                label = t("i18n.missing")
+            if key == "owner":
+                item = role_label(item)
+            elif key in ("status", "decision") and item in STATUS_KEYS:
+                item = status_label(item)
+            elif key == "status" and item == "已训练":
+                item = t("history.model_status_trained")
+            elif key == "status" and item == "样本不足":
+                item = t("history.model_status_insufficient")
+            elif key in ("baseline", "comparison"):
+                item = display_text(item)
+            elif key in ("模型说明", "model_note"):
+                item = display_text(item)
+            elif key == "reasons" and isinstance(item, list):
+                item = [display_text(reason) for reason in item]
+            elif key in ("valid_until", "delivery_date", "source_updated", "entered_at",
+                         "supplier_expiry", "trained_at_utc", "train_start", "train_end",
+                         "test_start", "test_end") and item:
+                item = format_date(item)
+            result[label] = localize_json(item)
+        return result
     if isinstance(value, list):
         return [localize_json(item) for item in value]
     return value

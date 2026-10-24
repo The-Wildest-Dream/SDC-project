@@ -1,0 +1,62 @@
+{
+  "Dynamic Pricing": {
+    "zh-CN": "动态定价",
+    "en": "Dynamic pricing",
+    "ms-MY": "Penetapan harga dinamik"
+  },
+  "Quotation Management": {
+    "zh-CN": "报价管理",
+    "en": "Quotation management",
+    "ms-MY": "Pengurusan sebut harga"
+  },
+  "Customer Creditworthiness": {
+    "zh-CN": "客户信用状况",
+    "en": "Customer creditworthiness",
+    "ms-MY": "Kelayakan kredit pelanggan"
+  },
+  "Customer Purchasing Potential": {
+    "zh-CN": "客户采购潜力",
+    "en": "Customer purchasing potential",
+    "ms-MY": "Potensi pembelian pelanggan"
+  },
+  "Profit Margin": {
+    "zh-CN": "毛利率",
+    "en": "Gross margin",
+    "ms-MY": "Margin kasar"
+  },
+  "Inventory Turnover": {
+    "zh-CN": "库存周转率",
+    "en": "Inventory turnover",
+    "ms-MY": "Pusing ganti inventori"
+  },
+  "Demand Forecasting": {
+    "zh-CN": "需求预测",
+    "en": "Demand forecasting",
+    "ms-MY": "Ramalan permintaan"
+  },
+  "Transaction History": {
+    "zh-CN": "交易历史",
+    "en": "Transaction history",
+    "ms-MY": "Sejarah transaksi"
+  },
+  "Pricing Recommendation": {
+    "zh-CN": "价格建议",
+    "en": "Pricing recommendation",
+    "ms-MY": "Cadangan harga"
+  },
+  "Risk Assessment": {
+    "zh-CN": "风险评估",
+    "en": "Risk assessment",
+    "ms-MY": "Penilaian risiko"
+  },
+  "Cost of Funds": {
+    "zh-CN": "资金占用成本",
+    "en": "Cost of funds",
+    "ms-MY": "Kos pembiayaan"
+  },
+  "On-time Payment Rate": {
+    "zh-CN": "按时付款率",
+    "en": "On-time payment rate",
+    "ms-MY": "Kadar pembayaran tepat pada masanya"
+  }
+}

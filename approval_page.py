@@ -1,28 +1,41 @@
 import streamlit as st
-from workflow_service import records, decide, LABELS
-from database import DatabaseUnavailable
-from quote_exports import fields
 
-st.header("审批中心")
-st.caption("模拟角色审批，仅用于比赛流程演示，不构成真实认证或生产权限。")
+from database import DatabaseUnavailable
+from i18n import display_error, localize_json, t
+from quote_exports import fields
+from workflow_service import decide, records
+
+
+st.header(t("approval.title"))
+st.caption(t("approval.caption"))
 try:
-    rows = [r for r in records() if r["status"] == "pending"]
-except DatabaseUnavailable as e:
-    st.error(str(e)); st.stop()
+    rows = [row for row in records() if row["status"] == "pending"]
+except DatabaseUnavailable as error:
+    st.error(display_error(error))
+    st.stop()
 if not rows:
-    st.info("暂无待审批报价。"); st.stop()
-st.metric("待审批版本数", len(rows))
-st.dataframe([fields(r) for r in rows], hide_index=True)
-identifier = st.selectbox("选择待审批版本", [r["id"] for r in rows])
-r = next(r for r in rows if r["id"] == identifier)
-st.json(r["payload"])
+    st.info(t("approval.no_pending"))
+    st.stop()
+st.metric(t("approval.pending_count"), len(rows))
+st.dataframe([fields(row) for row in rows], hide_index=True)
+identifier = st.selectbox(
+    t("approval.select"), [row["id"] for row in rows],
+    key="approval.quote_id",
+)
+row = next(item for item in rows if item["id"] == identifier)
+st.json(localize_json(row["payload"]))
 if st.session_state.demo_actor != "经理":
-    st.info("销售人员仅可查看；请切换模拟经理角色进行审批。"); st.stop()
-comment = st.text_area("审批意见（必填）")
-approved = st.radio("审批决定", ["批准", "驳回"])
-if st.button("确认审批", type="primary"):
+    st.info(t("approval.sales_view"))
+    st.stop()
+comment = st.text_area(t("approval.comment"), key="approval.comment")
+approved = st.radio(
+    t("approval.decision"), ["批准", "驳回"], key="approval.decision",
+    format_func=lambda value: t("button.approve") if value == "批准" else t("button.reject"),
+)
+if st.button(t("button.confirm"), type="primary", key="approval.confirm"):
     try:
         decide(identifier, approved == "批准", comment, st.session_state.demo_actor)
-        st.success("审批已保存，状态与日志已在同一事务提交。")
-        st.page_link("records_page.py", label="查看报价与下载")
-    except (ValueError, DatabaseUnavailable) as e: st.error(str(e))
+        st.success(t("approval.saved"))
+        st.page_link("records_page.py", label=t("approval.open_records"))
+    except (ValueError, DatabaseUnavailable) as error:
+        st.error(display_error(error))
