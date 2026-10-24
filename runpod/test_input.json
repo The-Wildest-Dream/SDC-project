@@ -1,0 +1,10 @@
+{
+  "input": {
+    "product": "P001",
+    "currency": "CNY",
+    "unit": "件",
+    "quantity": 100,
+    "cost": 50,
+    "day": "2026-10-23"
+  }
+}
