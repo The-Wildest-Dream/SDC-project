@@ -1,27 +1,37 @@
 """Streamlit application entry point, shared notices, and sidebar navigation."""
-from functools import partial
-
 import streamlit as st
-from i18n import t, install, LANGS
+from i18n import t, LANGS, initialize_language, role_label
 
 from pending_page import render_pending
 
 
+initialize_language()
 st.set_page_config(
-    page_title="制造企业报价辅助系统",
+    page_title=t("app.title"),
     layout="wide",
     initial_sidebar_state="expanded",
 )
 with st.sidebar:
-    st.selectbox("Language / 语言", LANGS, key="ui_language", index=0,
-                 format_func=lambda x: {"zh-CN":"简体中文","en":"English","ms":"Bahasa Melayu"}[x])
-install()
+    st.selectbox(
+        t("lang.label"),
+        LANGS,
+        key="ui_language",
+        format_func=lambda code: {
+            "zh-CN": t("lang.zh"),
+            "en": t("lang.en"),
+            "ms-MY": t("lang.ms"),
+        }[code],
+    )
 st.title(t("app.title"))
 st.caption(t("app.subtitle"))
 st.info(t("app.demo"))
 with st.sidebar:
-    st.selectbox(t("role.label"), ["销售甲", "销售乙", "经理"], key="demo_actor",
-                 format_func=lambda x: f"{t('role.manager')} · {x}" if x == "经理" else f"{t('role.sales')} · {x}")
+    st.selectbox(
+        t("role.label"),
+        ["销售甲", "销售乙", "经理"],
+        key="demo_actor",
+        format_func=lambda actor: role_label(actor),
+    )
     st.warning(t("role.warning"))
 
 pages = [
@@ -39,6 +49,6 @@ pages = [
 ]
 navigation = st.navigation(pages, position="sidebar")
 with st.sidebar:
-    st.caption("项目重点：价格分析与报价决策。")
-    st.caption("库存和付款表现仅为辅助提醒，不自动采购、授信或承诺交期。")
+    st.caption(t("app.scope"))
+    st.caption(t("app.aux_scope"))
 navigation.run()
