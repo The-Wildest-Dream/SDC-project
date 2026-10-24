@@ -216,14 +216,12 @@ Predictions may be unavailable for unsupported inputs or groups. They never over
 
 | Name | Role | GitHub |
 |---|---|---|
-| ZHANG XINRUI | **TODO — role** | **TODO — profile (optional)** |
-| **TODO — member 2** | **TODO — role** | **TODO — profile (optional)** |
-| **TODO — member 3** | **TODO — role** | **TODO — profile (optional)** |
-| **TODO — member 4** | **TODO — role** | **TODO — profile (optional)** |
+| ZHANG XINRUI | **Team Lead / AI / RunPod** | **TODO — profile (optional)** |
+| SU YIXUAN | **Frontend** | **TODO — profile (optional)** |
+| YANG YUHAN | **Data Analysing** | **TODO — profile (optional)** |
+| ZENG GUANCHUN | **Backend** | **TODO — profile (optional)** |
 
 ## Submission Checklist
-
-Based on the [official SDC Hackathon submission template](https://github.com/michaelzhngg/SDC_Hackathon_Submission_Template):
 
 - [x] Team information, Domain 2, SDG track, and university provided.
 - [x] GitHub repository, live demo, RunPod endpoint, and slide deck linked.
@@ -234,8 +232,6 @@ Based on the [official SDC Hackathon submission template](https://github.com/mic
 - [x] **[complete `SDC2026_Nameless_TechDeclaration.pdf`.](https://ap.wps.com/cms/docs/d/cbQa3ty1YcYPrgnk?platform=pc&refer=copylink).**
 - [ ] **TODO — complete `SDC2026_Nameless_Replit_POU.pdf`.**
 - [ ] **TODO — confirm all required signatures and official submission steps.**
-
-Official submission forms: [SDC submission documents and templates](https://drive.google.com/drive/folders/1xw7c2aN8N-at8hPEULzkcU76e_FFb0Ef).
 
 ## License
 
