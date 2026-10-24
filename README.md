@@ -25,7 +25,7 @@ An AI-assisted quotation decision-support application for small and medium-sized
 | Live Demo | [Open application](https://zhong-xiao-zhi-zao-qi-ye-bao-jie-fu-zhu-xi-tong.replit.app/) |
 | RunPod Endpoint | [RunPod API endpoint](https://api.runpod.ai/v2/4qbw60i5ghyhfo) |
 | Slide Deck | [Presentation](https://xmueducn-my.sharepoint.com/:p:/g/personal/ait2609083_xmu_edu_my/IQDxgkpp6H8MQKdCOZ0hwFvVAWOll2I7Hi-Hdqj3-wUncDk?e=VYBUpr) |
-| Demo Video | **TODO — add YouTube video URL** |
+| Demo Video | [Youtube video](https://www.youtube.com/watch?v=2GxmH4Z8Qk4) |
 
 ## Overview
 
@@ -236,10 +236,10 @@ Predictions may be unavailable for unsupported inputs or groups. They never over
 - [x] GitHub repository, live demo, RunPod endpoint, and slide deck linked.
 - [x] Replit and RunPod usage described.
 - [x] Apache License 2.0 included.
-- [ ] **TODO — add public YouTube demo video link.**
+- [x] Add public YouTube demo video link.
 - [x] **[complete `SDC2026_Nameless_Preliminary.pdf`](https://www.image2url.com/r2/default/documents/1792836815999-e2449e55-df2e-474f-9796-a8939b0a4e51.pdf).**
 - [x] **[complete `SDC2026_Nameless_TechDeclaration.pdf`.](https://www.image2url.com/r2/default/documents/1792836970315-62fb5192-5959-4d0d-96ca-14456f5fb2ac.pdf).**
-- [ ] **TODO — confirm all required signatures and official submission steps.**
+- [x] Confirm all required signatures and official submission steps.
 
 ## License
 
