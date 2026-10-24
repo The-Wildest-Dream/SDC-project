@@ -1,205 +1,254 @@
 # SME Manufacturing Quotation Assistant
 
-A Python and Streamlit demonstration application for small and medium-sized manufacturers. It supports **price analysis and quotation decisions** by combining product costs, synthetic transaction history, quotation rules, payment terms, and a simulated approval workflow. Inventory and customer payment information are supplementary signals only. The application does not guarantee optimal profit or assess a customer's integrity.
+An AI-assisted quotation decision-support application for small and medium-sized manufacturers, developed for **SDC Hackathon 2026 — Domain 2**. It combines cost-based pricing, historical transaction analysis, RunPod-hosted model inference, and a simulated quotation approval workflow.
+
+> **Prototype notice:** The included demonstration data and model-training records are synthetic. Predictions are supporting references, not guaranteed market prices, automatic profit optimization, or customer credit scores.
 
 ## Team Information
 
-| Item | Information |
+| Field | Details |
 |---|---|
 | Team Name | Nameless |
-| Domain | Domain 2 |
-| SDG Track and Target | SDG 9 — Industry, Innovation and Infrastructure; Target 9.3 — supporting small enterprises’ integration into value chains and markets through more consistent and traceable quotation workflows. |
+| Team Domain | Domain 2 |
+| SDG Track | SDG 9 — Industry, Innovation and Infrastructure |
+| SDG Target | 9.3 — Support small enterprises' access to value chains and markets |
 | Team Leader | ZHANG XINRUI |
-| University Affiliation(s) | XIAMEN UNIVERSITY MALAYSIA |
+| University | Xiamen University Malaysia |
 | Number of Members | 4 |
 
+## Links
 
-## Project Links
-
-| Resource | Link / Status |
+| Resource | Link |
 |---|---|
 | GitHub Repository | [The-Wildest-Dream/SDC-project](https://github.com/The-Wildest-Dream/SDC-project) |
-| Replit Project | [TODO — provide the canonical project URL](https://replit.com/@realityfordream/SME-Quotation-Evaluation-System) |
-| Live Demo | [TODO — provide a published application URL](https://zhong-xiao-zhi-zao-qi-ye-bao-jie-fu-zhu-xi-tong.replit.app/) |
-| Slide Deck | TODO |
-| YouTube Pitch / Demo Video | TODO |
-| RunPod Endpoint | Not used by this application; confirm whether the competition requires one |
+| Replit Project | [SME-Quotation-Evaluation-System](https://replit.com/@realityfordream/SME-Quotation-Evaluation-System) |
+| Live Demo | [Open application](https://zhong-xiao-zhi-zao-qi-ye-bao-jie-fu-zhu-xi-tong.replit.app/) |
+| RunPod Endpoint | [RunPod API endpoint](https://api.runpod.ai/v2/4qbw60i5ghyhfo) |
+| Slide Deck | [Presentation](https://xmueducn-my.sharepoint.com/:p:/g/personal/ait2609083_xmu_edu_my/IQDxgkpp6H8MQKdCOZ0hwFvVAWOll2I7Hi-Hdqj3-wUncDk?e=VYBUpr) |
+| Demo Video | **TODO — add YouTube video URL** |
 
-The repository is known from the submitted project information. Other links are not inferred from a development preview URL.
+## Overview
 
-## Problem and Solution
+### Problem
 
-Small manufacturers may need to reconcile material, labor, overhead, batch charges, delivery costs, prior transaction prices, payment terms, and approval steps when preparing a quote. This demo gives sales staff and managers a single workflow for reviewing those inputs. It stores snapshots with quote versions so that later product-cost changes do not rewrite an already saved quote.
+Manufacturing SMEs must combine production costs, historical selling prices, delivery charges, and payment terms when preparing quotations. Disconnected records and inconsistent review procedures can make quotations difficult to explain, compare, and approve.
 
-The target users are manufacturing sales staff and managers in a simulated competition workflow. Human staff enter the final proposed price; the simulated manager makes the approval decision. Historical statistics and model predictions are references, not automatic decisions.
+### Solution
 
-The application includes a scikit-learn regression prototype that predicts historical transaction unit prices. Transparent rules calculate cost floors and financing costs. The model does not predict purchase probability or an optimal-profit price.
+Our Streamlit application brings these steps into a single workflow. It calculates quotation cost floors, displays comparable historical prices, and offers an ML-based estimate of historical transaction unit prices through a **RunPod Serverless CPU endpoint**. Sales staff retain control of proposed prices; managers review quotations through a simulated approval process.
 
-## Implemented Features
+### Key Features
 
-Implementation claims below describe repository code; they are not all claims of end-to-end production validation.
+- **Cost-based quotation:** Material, labor, overhead, additional costs, minimum margin, and target margin.
+- **Historical price guidance:** Comparable transactions, price percentiles, and Ridge-regression estimates.
+- **RunPod inference:** Remote prediction with a clearly labeled local-model fallback.
+- **Payment and inventory context:** Financing-cost estimates, historical payment summaries, and stock reminders.
+- **Quotation workflow:** Drafts, version history, simulated manager approval, logs, and CSV/printable HTML exports.
+- **Data and languages:** PostgreSQL storage, synthetic CSV data tools, and Chinese/English/Malay language resources.
 
-- Synthetic product, customer, transaction, and inventory data; reproducible generator and CSV viewing, validation, import, and export.
-- Inquiry creation, cost snapshots, target and minimum margin calculations.
-- Comparable historical price statistics and a saved offline historical transaction-price model.
-- Payment-term and financing-cost calculations plus rule-based validity suggestions in the inquiry flow. These are demonstration inputs and rules, not a persistent manager-managed policy system.
-- Customer payment summaries based on legacy whole-order payment dates. A payment-ledger table and service code exist, but an integrated partial-payment import and reporting workflow is not complete.
-- Inventory availability reminders; they do not trigger purchasing or promise delivery.
-- Simulated sales/manager quote workflow, version snapshots, approval records, and operation logs.
-- CSV and printable HTML quote exports.
-- A session-scoped language selector and static resources for Simplified Chinese, English, and Bahasa Melayu. The project is shown in Chinese originally.
+### Tech Stack
 
-## Demo Walkthrough
+| Layer | Technology |
+|---|---|
+| Application / UI | Python 3.13, Streamlit |
+| Business logic | Python quotation and payment services |
+| Database | PostgreSQL, SQLAlchemy, psycopg |
+| ML | scikit-learn (StandardScaler + Ridge), pandas, joblib |
+| Remote inference | RunPod Serverless **CPU**, Queue endpoint |
+| Hosting and development | Replit, Replit Agent |
+| Dependencies | `pyproject.toml`, `uv.lock` |
 
-Prerequisites: Python 3.13, `uv`, the locked dependencies in `pyproject.toml` and `uv.lock`, and a PostgreSQL `DATABASE_URL`.
+## Project Structure
 
-1. Initialize a development database and load the synthetic demo data as described in [Setup and Run](#setup--run).
-2. Start the Streamlit application and choose a demo role in the sidebar. Role switching is not authentication or production-grade authorization.
-3. Open **New Inquiry & Costing** (the page title may currently be localized or partly untranslated). Select a customer and product; review the cost and payment-term inputs, then save the inquiry.
-4. Open **Historical Prices & Quote Guidance**. Review comparable transactions, the model reference when available, cost floor, and manually proposed quote. Save a quote draft.
-5. Open **Quote Records & Downloads** and submit the sales-owned draft for approval.
-6. Switch to the simulated Manager role, open **Approvals**, enter an approval comment, and approve or reject the pending version.
-7. Return to quote records and download the saved version as CSV or printable HTML.
+```text
+SDC-project/
+├── app.py                       # Streamlit entry point
+├── *_page.py                    # Workflow pages
+├── history_page.py              # Historical analysis and remote prediction
+├── runpod_client.py             # RunPod API client and fallback
+├── runpod/
+│   ├── handler.py               # Serverless worker
+│   ├── Dockerfile               # Worker image
+│   ├── requirements.txt
+│   ├── test_input.json
+│   ├── test_input_myr.json
+│   └── README.md
+├── price_model.py               # Model inference logic
+├── train_price_model.py         # Offline training
+├── models/historical_price/     # Model artifact and evaluation
+├── quotation_rules.py           # Pricing rules
+├── finance_rules.py             # Payment/financing calculations
+├── *_service.py                 # Data and business services
+├── database.py
+├── db_schema.py
+├── generate_data.py
+├── generate_myr_data.py
+├── sample_data/                 # CNY samples and separate MYR review CSVs
+├── locales/                     # Chinese, English, Malay resources
+├── i18n.py
+├── tests/
+├── start.sh
+├── pyproject.toml
+├── uv.lock
+├── .replit
+├── LICENSE
+└── README.md
+```
 
-The role selector is a demonstration control only. It is not proof of a user's identity.
+The repository also contains auxiliary workspace/frontend scaffolding; the quotation app runs through Streamlit.
 
-## Architecture and Technology
-
-- Python 3.13, Streamlit, SQLAlchemy, psycopg 3, PostgreSQL.
-- scikit-learn, pandas, and joblib for offline training, evaluation, and model loading.
-- `app.py` is the Streamlit multipage entry point; page modules call Python services and rule functions.
-- PostgreSQL stores business data; `DATABASE_URL` is read from the runtime environment.
-- `train_price_model.py` generates the model artifact offline. The app loads the artifact; it does not train on page refresh.
-- Replit runs the Streamlit app through `start.sh` on `PORT` (default 3000).
-
-The repository also contains React/Vite and API-server template artifacts. They are not the quotation application's runtime architecture. No RunPod endpoint is used.
+### Architecture
 
 ```mermaid
 flowchart LR
-  User[Browser] --> Replit[Replit Streamlit workflow]
-  Replit --> Pages[Python Streamlit pages]
-  Pages --> Services[Rules and Python services]
-  Services --> DB[(PostgreSQL via SQLAlchemy and psycopg)]
-  Pages --> Model[Saved scikit-learn model]
-  Trainer[Offline synthetic-data training] --> Model
+    U[User] --> A[Replit Streamlit App]
+    A --> D[(PostgreSQL)]
+    A --> R[Quotation Rules]
+    A --> C[RunPod API Client]
+    C --> Q[RunPod Serverless Queue]
+    Q --> M[CPU Ridge Model]
+    M --> Q
+    Q --> C
+    C -. If unavailable .-> F[Local Model Fallback]
+    C --> A
+    F --> A
 ```
 
-## Repository Structure
+## How to Run
 
-| Path | Purpose |
-|---|---|
-| `app.py`, `*_page.py` | Streamlit entry point and page modules |
-| `quotation_rules.py`, `finance_rules.py`, `inquiry_service.py`, `workflow_service.py`, `payment_service.py` | Cost, payment, inquiry, and quote workflow logic |
-| `database.py`, `db_schema.py`, `data_service.py`, `shared_data.py` | PostgreSQL schema, connection, CSV validation, and shared data access |
-| `generate_data.py`, `generate_myr_data.py`, `sample_data/` | Fixed-seed CNY and separate MYR synthetic data generators and review CSVs |
-| `train_price_model.py`, `price_model.py`, `models/historical_price/` | Offline model training, prediction, and evaluation artifact |
-| `locales/`, `i18n.py` | Static translation resources and session language helper |
-| `tests/`, `verify_database.py`, `verify_workflow.py` | Unit and manual database workflow checks |
-| `DATA_GUIDE.md`, `DATABASE_GUIDE.md`, `MODEL_GUIDE.md`, `QUOTATION_GUIDE.md`, `WORKFLOW_GUIDE.md` | Technical guides |
-| `submission/` | Missing; required signed PDFs and evidence have not been supplied |
-| `artifacts/quotation/` | Replit artifact directory containing preview scaffold files; app launch uses root `start.sh` |
+### Option 1 — Replit
 
-## Setup and Run
+1. Open the [Replit project](https://replit.com/@realityfordream/SME-Quotation-Evaluation-System).
+2. Configure PostgreSQL and the following Replit Secrets:
+   - `DATABASE_URL` — PostgreSQL connection.
+   - `RUNPOD_API_KEY` — RunPod API credential.
+   - `RUNPOD_ENDPOINT_ID` — `4qbw60i5ghyhfo`.
+3. Start the existing application workflow and open Preview. The published application is linked above.
+4. When publishing changes, confirm that deployment Secrets are available and republish as needed.
 
-Install Python 3.13 and `uv`, then sync the locked project dependencies:
+### Option 2 — Local Development
+
+Requires Python 3.13, `uv`, and a development PostgreSQL database.
 
 ```bash
+git clone https://github.com/The-Wildest-Dream/SDC-project.git
+cd SDC-project
 uv sync --frozen
 ```
 
-Configure `DATABASE_URL` using the Replit database/environment configuration. Do not place credentials in source files, README, or logs. Then, in a **development** environment:
+Set `DATABASE_URL`, `RUNPOD_API_KEY`, and `RUNPOD_ENDPOINT_ID` in the runtime environment. For a new **development** database:
 
 ```bash
 python db_manage.py check
 python db_manage.py init
 python db_manage.py seed
-python db_manage.py counts
 sh start.sh
 ```
 
-`init` creates missing tables only; it does not clear or rebuild existing data. `seed` adds missing synthetic master/transaction records and is intended to be repeatable. Do not repeatedly reset or clear the database. `migrate_legacy_quotes.py` is a separate development-only compatibility utility; do not run it in production.
+The Streamlit server uses `PORT` (default `3000`). Do not run development seeding or workflow verification scripts against production data without reviewing their effects.
 
-The Streamlit service listens on `PORT`, defaulting to `3000`. In Replit, start the configured `artifacts/quotation: web` workflow and use its Preview. The canonical Replit project and published URL remain TODO in the project links.
-
-## AI Model and Evaluation
-
-The saved model predicts **historical transaction unit price**. It uses separate `StandardScaler + Ridge(alpha=1)` pipelines for each product/currency/unit group. Numeric features are quantity, historical unit cost, ordinal date, and month; product/currency/unit select a group. Actual payment dates and transaction price are not input features.
-
-Training uses the 300 fixed-seed CNY trades and 320 separate MYR transactions in the reviewable `sample_data/MYR_模拟数据_*.csv` files, not database uploads. Generate the MYR CSVs with `python generate_myr_data.py`; train explicitly with `python train_price_model.py`. Records are sorted by date and order ID, then split chronologically; same-day records remain together. The preprocessing pipeline is fitted on training data only. The baseline is the training-set median price for the same group, compared with the model on the same held-out test records using MAE. CNY and MYR remain separate; there is no conversion or pooled per-currency price comparison.
-
-The current evaluation artifact uses a split date of 2026-08-13 (496 training and 124 test records). Model MAE is lower for 8 of 10 product/currency/unit groups; it is higher for CNY products P001 and P005. See [MODEL_GUIDE.md](MODEL_GUIDE.md) and `models/historical_price/evaluation.json` for actual per-group results. Synthetic-data metrics validate only the prototype workflow and do not demonstrate real commercial benefit or verified Malaysian market prices.
-
-The app falls back to cost and historical references when a model is missing, a group has insufficient data, or inputs are out of range. Re-train explicitly with `python train_price_model.py`; uploaded data does not enter training automatically. The generated `joblib` artifact is loaded at runtime and should only be loaded from a trusted project build.
-
-## Data and Privacy
-
-The generator uses a fixed random seed to create synthetic products, customers, transactions, and inventory. Its rules and CSV contracts are documented in [DATA_GUIDE.md](DATA_GUIDE.md). Valid imported business data is stored in PostgreSQL. This repository does not claim automatic deletion or encryption beyond the platform/database configuration.
-
-The sales and manager roles are simulated values used for workflow demonstration. Backend business functions also validate role codes and quote states, but there is no real user authentication or production-grade access-control system. Database credentials are obtained from `DATABASE_URL` at runtime and are not included here.
-
-## Testing and Verification
-
-Commands available in the repository:
+### Run Tests
 
 ```bash
 python -m unittest discover -s tests -v
-python verify_database.py
-python verify_workflow.py
 ```
 
-The unit suite covers calculation, data validation, and model behavior. The database verification script requires a configured development PostgreSQL database and performs transactional checks. The workflow verification script creates synthetic demonstration quote records; review its behavior before running against a shared database.
+Database and workflow verification scripts are also provided: `verify_database.py` and `verify_workflow.py`.
 
-For this documentation-only change, repository links and document inventory are checked. **Not run:** unit tests, database verification, and interactive approval flow; this change does not modify application code. Prior recorded model evaluation is described above, not rerun as part of this documentation update.
+## How We Use Replit (Required)
 
-## Replit, RunPod, and Sponsor Resources
+- **Development:** Replit and Replit Agent supported implementation, iteration, and debugging.
+- **Hosting:** The Streamlit quotation application is deployed using Replit.
+- **Data and configuration:** PostgreSQL connects through `DATABASE_URL`; sensitive credentials are managed through Replit Secrets.
+- **Integration:** The historical-price page uses `runpod_client.py` to request remote predictions.
 
-The repository is configured to run the Streamlit app in a Replit workflow and declares an Autoscale deployment target. This confirms project configuration, not a currently published or competition-accessible production URL. The app can call the configured RunPod Serverless endpoint; after changing the checked-in model artifact, rebuild and push the image and update/redeploy the endpoint using the steps in `runpod/README.md`. No sponsor-credit usage evidence is present in the repository.
+**Proof of Use:** **[ `SDC2026_Nameless_Replit_POU.pdf`](https://www.image2url.com/r2/default/documents/1792836875707-943318e8-ad85-4550-96af-9fbc836b65a6.pdf)**
 
-## AI-Assisted Development and Third-Party Resources
+## How We Use RunPod (Required)
 
-Replit Agent was used in this workspace for implementation and documentation assistance. ChatGPT was used for requirements refinement, implementation prompts,
-technical explanations, documentation drafting and translation assistance. Replit Agent was used for application implementation, debugging. The team reviewed the generated application through staged feature checks. Final review of documentation, translations and the complete deployed workflow are also finished.
+- **Endpoint:** `SDC-project` — [https://api.runpod.ai/v2/4qbw60i5ghyhfo](https://api.runpod.ai/v2/4qbw60i5ghyhfo).
+- **Compute:** RunPod Serverless **CPU**, Queue based. No GPU use is claimed.
+- **Worker:** `runpod/handler.py`, packaged using `runpod/Dockerfile` and the trusted saved model artifact.
+- **Integration:** `runpod_client.py` submits a job to `/run`, polls `/status/{job_id}`, and returns the result to Streamlit.
+- **Reliability:** The interface identifies the prediction source as RunPod, local fallback, or unavailable.
+- **Data boundary:** The worker receives model input fields, not the application's PostgreSQL credentials.
 
-Runtime dependencies are declared in `pyproject.toml` and pinned by `uv.lock`, including Streamlit, SQLAlchemy, psycopg, scikit-learn, joblib, and pandas. Their individual license notices have not been independently inventoried here; retain third-party notices and consult package metadata before redistribution.
+Example request body:
 
-## Known Limitations and Future Improvements
+```json
+{
+  "input": {
+    "product": "P001",
+    "currency": "CNY",
+    "unit": "件",
+    "quantity": 100,
+    "cost": 50,
+    "day": "2026-10-23"
+  }
+}
+```
 
-- All supplied transaction and business data are synthetic. Model performance on them does not establish real-world accuracy or commercial impact.
-- The model does not beat its baseline for every product group and falls back outside its supported ranges.
-- Simulated role selection is not identity authentication or production authorization.
-- The payment-ledger schema/service is not yet connected to a complete partial-payment import and analysis UI; current customer summaries rely on whole-order payment dates.
-- Validity inputs/rules are demonstration-level and are not managed through a durable manager policy screen.
-- The three-language selector and static resources are present, but translation coverage is incomplete and some strings fall back to Chinese.
-- Competition identity, SDG target, published links, signatures, and sponsor evidence remain unconfirmed.
+The model runs on CPU because the current scikit-learn inference workload does not require GPU acceleration. **If the competition separately mandates GPU usage, organizer confirmation is needed.**
 
-## Submission Materials and Checklist
+**Proof of Use:** [**SDC2026_Nameless_Runpod_POU.pdf**](https://www.image2url.com/r2/default/documents/1792836931384-cb441cbc-57a0-43be-ba7e-fda4d20925ab.pdf)
 
-Required file names use the official team name, which is currently **TODO**. No submission PDFs were found:
+## Model Evaluation and Limitations
 
-| Material | Status |
-|---|---|
-| `submission/SDC2026_<TeamName>_Preliminary.pdf` | Missing |
-| `submission/SDC2026_<TeamName>_TechDeclaration.pdf` | Missing |
-| `submission/SDC2026_<TeamName>_Replit_POU.pdf` | Missing |
-| RunPod usage evidence | RunPod inference is integrated; rebuild/push the updated MYR worker image and redeploy the existing endpoint before live MYR verification |
-| Slide deck | Missing / link TODO |
-| 5–7 minute YouTube video | Missing / link TODO |
-| Published prototype URL | TODO |
+The model predicts **historical transaction unit prices** using quantity, historical unit cost, transaction date, and month, with separate models by product/currency/unit. Training is offline using reproducible synthetic data.
 
-Submission checklist (not verified):
+Training uses 300 fixed-seed CNY transactions and 320 separate MYR synthetic transactions from the reviewable CSV bundle. The current artifact uses a chronological split at 2026-08-13: 496 training records and 124 test records. Each product/currency/unit group has a separate model; CNY and MYR are not converted or pooled. Model MAE is lower than the training-set median baseline for 8 of 10 groups; it is higher for CNY products P001 and P005.
 
-- [ ] Official team name and all member details confirmed.
-- [ ] Repository visibility is Public.
-- [ ] Root Apache 2.0 `LICENSE` is present.
-- [ ] Committee-designated account can access the project.
-- [ ] All project and submission links are accessible.
-- [ ] Technical declaration and signatures are complete.
-- [ ] Official website submission is complete.
-- [ ] RunPod requirement and any required evidence are confirmed.
+| Product ID | Currency | Baseline MAE | Model MAE |
+|---|---|---:|---:|
+| P001 | CNY | 6.4500 | 7.5625 |
+| P002 | CNY | 5.9346 | 3.6515 |
+| P003 | CNY | 13.4467 | 10.7611 |
+| P004 | CNY | 5.8117 | 4.1854 |
+| P005 | CNY | 6.0617 | 6.5109 |
+| P006 | CNY | 7.4408 | 5.5226 |
+| P_MY_001 | MYR | 2.6636 | 2.3087 |
+| P_MY_002 | MYR | 0.4667 | 0.2990 |
+| P_MY_003 | MYR | 0.7900 | 0.4028 |
+| P_MY_004 | MYR | 1.4614 | 0.6866 |
 
-Completing this README does not mean the competition submission is complete.
+Regenerate the separate MYR review CSVs with `python generate_myr_data.py` and train explicitly with `python train_price_model.py`. Generation does not import data into PostgreSQL; inspect the CSVs before manually importing them. Four supported inquiry examples are listed in [`sample_data/MYR_演示询价示例.md`](sample_data/MYR_演示询价示例.md). These synthetic-data metrics demonstrate prototype behavior only, not verified Malaysian market prices or real commercial benefit. See [MODEL_GUIDE.md](MODEL_GUIDE.md) and [`evaluation.json`](models/historical_price/evaluation.json) for method and metadata.
+
+Predictions may be unavailable for unsupported inputs or groups. They never override minimum-margin rules or automatically set the final quote. The Sales/Manager role switch is a demonstration control, **not production authentication**. Payment summaries and stock reminders are informational, not automatic credit decisions or procurement actions.
+
+## Challenges & Learnings
+
+- Reused a single offline-trained model across local and RunPod inference instead of maintaining different algorithms.
+- Integrated asynchronous RunPod Queue requests and labeled fallback behavior.
+- Combined explainable quotation rules with ML references while keeping final decisions human-controlled.
+- Developed a multilingual, database-backed demonstration with versioned quotation records.
+
+## Future Improvements
+
+- [ ] Validate and retrain with consented real manufacturing data, including Malaysian currency/product coverage.
+- [ ] Improve multilingual consistency and model evaluation across products.
+- [ ] Add authenticated accounts, stronger access controls, and operational monitoring.
+- [ ] Expand partial-payment tracking and configurable approval policies.
+
+## Team
+
+| Name | Role | GitHub |
+|---|---|---|
+| ZHANG XINRUI | **Team Lead / AI / RunPod** | **@The-Wildest-Dream** |
+| SU YIXUAN | **Frontend** | **TODO — profile (optional)** |
+| YANG YUHAN | **Data Analysing** | **TODO — profile (optional)** |
+| ZENG GUANCHUN | **Backend** | **@qingfengputs** |
+
+## Submission Checklist
+
+- [x] Team information, Domain 2, SDG track, and university provided.
+- [x] GitHub repository, live demo, RunPod endpoint, and slide deck linked.
+- [x] Replit and RunPod usage described.
+- [x] Apache License 2.0 included.
+- [ ] **TODO — add public YouTube demo video link.**
+- [x] **[complete `SDC2026_Nameless_Preliminary.pdf`](https://www.image2url.com/r2/default/documents/1792836815999-e2449e55-df2e-474f-9796-a8939b0a4e51.pdf).**
+- [x] **[complete `SDC2026_Nameless_TechDeclaration.pdf`.](https://www.image2url.com/r2/default/documents/1792836970315-62fb5192-5959-4d0d-96ca-14456f5fb2ac.pdf).**
+- [ ] **TODO — confirm all required signatures and official submission steps.**
 
 ## License
 
-This project is licensed under the Apache License 2.0.
-See the [LICENSE](LICENSE) file for details.
+Licensed under the [Apache License 2.0](LICENSE).
