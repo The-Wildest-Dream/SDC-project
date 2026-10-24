@@ -1,170 +1,134 @@
 # SME Manufacturing Quotation Assistant
 
-**An AI-assisted quotation decision-support prototype for small and medium-sized manufacturing enterprises.** Built for SDC Hackathon Domain 2, it combines production-cost analysis, historical transaction-price references, a remotely hosted prediction model, and a simulated quotation approval workflow. The system supports human decisions; it does not automatically determine optimal selling prices or guarantee profitability.
+An AI-assisted quotation decision-support application for small and medium-sized manufacturers, developed for **SDC Hackathon 2026 — Domain 2**. It combines cost-based pricing, historical transaction analysis, RunPod-hosted model inference, and a simulated quotation approval workflow.
 
-> **Demo disclaimer:** The included product, customer, transaction, inventory, and model-training data are synthetic. The application is a competition prototype, not a production financial or credit-risk system.
+> **Prototype notice:** The included demonstration data and model-training records are synthetic. Predictions are supporting references, not guaranteed market prices, automatic profit optimization, or customer credit scores.
 
 ## Team Information
 
 | Field | Details |
 |---|---|
-| **Team Name** | Nameless |
-| **Team Domain** | Domain 2 |
-| **SDG Track (1–17)** | SDG 9 — Industry, Innovation and Infrastructure |
-| **SDG Target** | Target 9.3 — Improve small-scale enterprises' integration into value chains and markets |
-| **Team Leader** | ZHANG XINRUI |
-| **University** | Xiamen University Malaysia |
-| **Number of Members** | 4 |
-| **Other Team Members** | TODO — enter the remaining three members' names |
+| Team Name | Nameless |
+| Team Domain | Domain 2 |
+| SDG Track | SDG 9 — Industry, Innovation and Infrastructure |
+| SDG Target | 9.3 — Support small enterprises' access to value chains and markets |
+| Team Leader | ZHANG XINRUI |
+| University | Xiamen University Malaysia |
+| Number of Members | 4 |
 
 ## Links
 
 | Resource | Link |
 |---|---|
-| **GitHub Repository** | [The-Wildest-Dream/SDC-project](https://github.com/The-Wildest-Dream/SDC-project) |
-| **Replit Project** | [SME-Quotation-Evaluation-System](https://replit.com/@realityfordream/SME-Quotation-Evaluation-System) |
-| **Live Demo** | [SME Manufacturing Quotation Assistant](https://zhong-xiao-zhi-zao-qi-ye-bao-jie-fu-zhu-xi-tong.replit.app/) |
-| **RunPod Endpoint** | https://api.runpod.ai/v2/4qbw60i5ghyhfo |
-| **Slide Deck** | [**link**](https://xmueducn-my.sharepoint.com/:p:/g/personal/ait2609083_xmu_edu_my/IQDxgkpp6H8MQKdCOZ0hwFvVAWOll2I7Hi-Hdqj3-wUncDk?e=VYBUpr) |
-| **Demo Video** | **TODO — add the YouTube pitch/demo video link** |
+| GitHub Repository | [The-Wildest-Dream/SDC-project](https://github.com/The-Wildest-Dream/SDC-project) |
+| Replit Project | [SME-Quotation-Evaluation-System](https://replit.com/@realityfordream/SME-Quotation-Evaluation-System) |
+| Live Demo | [Open application](https://zhong-xiao-zhi-zao-qi-ye-bao-jie-fu-zhu-xi-tong.replit.app/) |
+| RunPod Endpoint | [RunPod API endpoint](https://api.runpod.ai/v2/4qbw60i5ghyhfo) |
+| Slide Deck | [Presentation](https://xmueducn-my.sharepoint.com/:p:/g/personal/ait2609083_xmu_edu_my/IQDxgkpp6H8MQKdCOZ0hwFvVAWOll2I7Hi-Hdqj3-wUncDk?e=VYBUpr) |
+| Demo Video | **TODO — add YouTube video URL** |
 
 ## Overview
 
 ### Problem
 
-Small and medium-sized manufacturers must consider material costs, labor, overhead, delivery expenses, historical transaction prices, and customer payment terms when preparing quotations. Fragmented records and inconsistent procedures can make pricing decisions difficult to explain and review. Teams also need to retain the context of earlier quotations when costs change.
+Manufacturing SMEs must combine production costs, historical selling prices, delivery charges, and payment terms when preparing quotations. Disconnected records and inconsistent review procedures can make quotations difficult to explain, compare, and approve.
 
 ### Solution
 
-The SME Manufacturing Quotation Assistant provides a unified Streamlit workflow for reviewing costs, historical transactions, price references, payment-term effects, and approval status. An offline-trained scikit-learn model estimates historical transaction unit prices. The application can request that estimate from a **RunPod Serverless CPU worker** and displays the prediction source transparently.
-
-The model is an **additional decision reference**. Users retain control over proposed prices, and transparent quotation rules enforce minimum-margin checks.
+Our Streamlit application brings these steps into a single workflow. It calculates quotation cost floors, displays comparable historical prices, and offers an ML-based estimate of historical transaction unit prices through a **RunPod Serverless CPU endpoint**. Sales staff retain control of proposed prices; managers review quotations through a simulated approval process.
 
 ### Key Features
 
-1. **Cost-aware quotation support:** Material, labor, overhead, batch and delivery inputs; minimum-margin and target-margin calculations; saved cost snapshots.
-2. **Historical price analysis:** Comparable transaction filters, price percentiles, and a synthetic-data-trained unit-price prediction model.
-3. **RunPod remote inference:** Queue-based Serverless execution through a Python API client, with labeled local fallback when remote inference is unavailable.
-4. **Payment-term analysis:** Prepayment, payment delay, and financing-cost calculations for quotation reference.
-5. **Inventory and customer context:** Stock reminders and historical payment summaries as supplementary signals, not automated procurement or credit scoring.
-6. **Simulated approval workflow:** Sales drafts, versioned quotations, manager approval/rejection, records, and audit-oriented logs.
-7. **Data and exports:** PostgreSQL-backed business records, synthetic CSV import/export tools, quotation CSV export, and printable HTML.
-8. **Multilingual interface:** Simplified Chinese, English, and Bahasa Melayu translation resources. **TODO — verify complete translation coverage in the final deployed demo.**
+- **Cost-based quotation:** Material, labor, overhead, additional costs, minimum margin, and target margin.
+- **Historical price guidance:** Comparable transactions, price percentiles, and Ridge-regression estimates.
+- **RunPod inference:** Remote prediction with a clearly labeled local-model fallback.
+- **Payment and inventory context:** Financing-cost estimates, historical payment summaries, and stock reminders.
+- **Quotation workflow:** Drafts, version history, simulated manager approval, logs, and CSV/printable HTML exports.
+- **Data and languages:** PostgreSQL storage, synthetic CSV data tools, and Chinese/English/Malay language resources.
 
 ### Tech Stack
 
-| Layer | Technology | Role |
-|---|---|---|
-| Frontend / application | Python 3.13, Streamlit | Interactive multipage quotation workflow |
-| Business logic | Python modules | Cost rules, payment calculations, quote versioning and approvals |
-| Database | PostgreSQL, SQLAlchemy, psycopg | Business records and workflow state |
-| ML model | scikit-learn, pandas, joblib | Offline training and historical unit-price inference |
-| AI / Compute | **RunPod Serverless (CPU, Queue mode)** | Remote inference using the saved model artifact |
-| API integration | `runpod_client.py`, HTTPS / JSON | Submits jobs and polls results |
-| Development / hosting | Replit, Replit Agent | Development, preview and deployed Streamlit app |
-| Package management | `uv`, `pyproject.toml`, `uv.lock` | Reproducible Python dependency installation |
-
-> **Compute disclosure:** The current model uses CPU-based scikit-learn Ridge regression, **not GPU-accelerated inference**. The official submission README gives a GPU workload as an example; **TODO — confirm with organizers whether this CPU deployment meets any separate GPU-specific eligibility requirement**.
+| Layer | Technology |
+|---|---|
+| Application / UI | Python 3.13, Streamlit |
+| Business logic | Python quotation and payment services |
+| Database | PostgreSQL, SQLAlchemy, psycopg |
+| ML | scikit-learn (StandardScaler + Ridge), pandas, joblib |
+| Remote inference | RunPod Serverless **CPU**, Queue endpoint |
+| Hosting and development | Replit, Replit Agent |
+| Dependencies | `pyproject.toml`, `uv.lock` |
 
 ## Project Structure
 
-The following paths reflect this project's real repository layout rather than the template's example `src/main.py` layout.
-
 ```text
 SDC-project/
-├── app.py                         # Streamlit multipage entry point
-├── *_page.py                      # Streamlit workflow pages
-├── history_page.py                # Historical pricing and RunPod integration
-├── runpod_client.py               # RunPod API submission, polling and fallback
+├── app.py                       # Streamlit entry point
+├── *_page.py                    # Workflow pages
+├── history_page.py              # Historical analysis and remote prediction
+├── runpod_client.py             # RunPod API client and fallback
 ├── runpod/
-│   ├── Dockerfile                 # Worker image; build context is repository root
-│   ├── handler.py                 # RunPod Serverless handler
-│   ├── requirements.txt           # Worker dependencies
-│   ├── test_input.json            # Example inference request
-│   └── README.md                  # RunPod setup and usage guide
-├── price_model.py                 # Shared prediction and applicability logic
-├── train_price_model.py           # Offline training
-├── models/historical_price/       # Trusted model artifact and evaluation
-├── quotation_rules.py            # Quotation calculations and checks
-├── finance_rules.py              # Financing and payment-term calculations
-├── inquiry_service.py            # Inquiry logic
-├── workflow_service.py           # Quotation workflow logic
-├── payment_service.py            # Payment-related service logic
-├── database.py                    # Database access
-├── db_schema.py                   # Database schema
-├── data_service.py                # Data import/validation logic
-├── generate_data.py               # Reproducible synthetic data
-├── sample_data/                   # Sample CSV files
-├── locales/                       # zh-CN, en and ms resources
-├── i18n.py                        # Localization helpers
-├── tests/                         # Automated tests, including RunPod integration tests
-├── db_manage.py                   # Development database management
-├── verify_database.py             # Database verification
-├── verify_workflow.py             # Workflow verification
-├── start.sh                       # Streamlit launch script
-├── .replit                        # Replit configuration
-├── pyproject.toml                 # Python dependencies
-├── uv.lock                        # Locked Python dependencies
-├── DATA_GUIDE.md
-├── DATABASE_GUIDE.md
-├── MODEL_GUIDE.md
-├── QUOTATION_GUIDE.md
-├── WORKFLOW_GUIDE.md
-├── LICENSE                        # Apache License 2.0
+│   ├── handler.py               # Serverless worker
+│   ├── Dockerfile               # Worker image
+│   ├── requirements.txt
+│   ├── test_input.json
+│   └── README.md
+├── price_model.py               # Model inference logic
+├── train_price_model.py         # Offline training
+├── models/historical_price/     # Model artifact and evaluation
+├── quotation_rules.py           # Pricing rules
+├── finance_rules.py             # Payment/financing calculations
+├── *_service.py                 # Data and business services
+├── database.py
+├── db_schema.py
+├── generate_data.py
+├── sample_data/
+├── locales/                     # Chinese, English, Malay resources
+├── i18n.py
+├── tests/
+├── start.sh
+├── pyproject.toml
+├── uv.lock
+├── .replit
+├── LICENSE
 └── README.md
 ```
 
-The repository also includes React/Vite and workspace scaffolding. The quotation application itself runs as a Python Streamlit application.
-
-**Submission directory:** **TODO — create `submission/` and add the completed required PDF files before final submission.**
+The repository also contains auxiliary workspace/frontend scaffolding; the quotation app runs through Streamlit.
 
 ### Architecture
 
 ```mermaid
-flowchart TD
-    U[User / Browser] --> R[Replit Streamlit Application]
-    R --> P[Quotation and Payment Rules]
-    R --> DB[(PostgreSQL)]
-    R --> H[Historical Price Page]
-    H --> C[RunPod API Client]
-    C -->|POST /run| Q[RunPod Serverless Queue]
-    C -->|GET /status/job-id| Q
-    Q --> W[CPU Worker: scikit-learn Ridge Model]
-    W --> Q
+flowchart LR
+    U[User] --> A[Replit Streamlit App]
+    A --> D[(PostgreSQL)]
+    A --> R[Quotation Rules]
+    A --> C[RunPod API Client]
+    C --> Q[RunPod Serverless Queue]
+    Q --> M[CPU Ridge Model]
+    M --> Q
     Q --> C
-    C --> H
-    C -. Remote failure / explicit fallback .-> L[Local Saved Model]
-    L --> H
-    T[Offline Training on Synthetic Data] --> A[Trusted model.joblib]
-    A --> W
-    A --> L
+    C -. If unavailable .-> F[Local Model Fallback]
+    C --> A
+    F --> A
 ```
-
-**Data boundary:** The RunPod Worker receives only model input fields (product ID, currency, unit, quantity, unit cost, and date). The Worker does not connect directly to PostgreSQL and does not need database credentials. The saved model artifact is packaged into the Docker image.
 
 ## How to Run
 
-### Option 1 — Run on Replit (Recommended)
+### Option 1 — Replit (Recommended)
 
 1. Open the [Replit project](https://replit.com/@realityfordream/SME-Quotation-Evaluation-System).
-2. Configure the Replit database and application environment.
-3. Add the following **Secrets** in Replit (never put real values in GitHub):
+2. Configure PostgreSQL and the following Replit Secrets:
+   - `DATABASE_URL` — PostgreSQL connection.
+   - `RUNPOD_API_KEY` — RunPod API credential.
+   - `RUNPOD_ENDPOINT_ID` — `4qbw60i5ghyhfo`.
+3. Start the existing application workflow and open Preview. The published application is linked above.
+4. When publishing changes, confirm that deployment Secrets are available and republish as needed.
 
-   | Secret | Purpose |
-   |---|---|
-   | `DATABASE_URL` | PostgreSQL connection string |
-   | `RUNPOD_API_KEY` | RunPod API credential |
-   | `RUNPOD_ENDPOINT_ID` | ID of the deployed RunPod Serverless Endpoint |
+**Never commit API keys or database passwords.**
 
-4. Start the existing Replit workflow / Streamlit application.
-5. Open the application preview or the [published demo](https://zhong-xiao-zhi-zao-qi-ye-bao-jie-fu-zhu-xi-tong.replit.app/).
-6. For the published deployment, confirm that the deployment environment also has access to the required Secrets; **republish** after code changes when necessary.
+### Option 2 — Local Development
 
-If RunPod is not configured or is temporarily unavailable, the historical price page may use the local model fallback and labels its prediction source accordingly.
-
-### Option 2 — Run Locally
-
-Prerequisites: Python 3.13, `uv`, and a development PostgreSQL database.
+Requires Python 3.13, `uv`, and a development PostgreSQL database.
 
 ```bash
 git clone https://github.com/The-Wildest-Dream/SDC-project.git
@@ -172,19 +136,16 @@ cd SDC-project
 uv sync --frozen
 ```
 
-Configure `DATABASE_URL`, `RUNPOD_API_KEY`, and `RUNPOD_ENDPOINT_ID` in your local environment or a securely managed, untracked environment configuration. **Do not commit credentials.**
-
-For a **new development database only**, run:
+Set `DATABASE_URL`, `RUNPOD_API_KEY`, and `RUNPOD_ENDPOINT_ID` in the runtime environment. For a new **development** database:
 
 ```bash
 python db_manage.py check
 python db_manage.py init
 python db_manage.py seed
-python db_manage.py counts
 sh start.sh
 ```
 
-`init` creates missing tables; `seed` adds missing synthetic records. These commands should not be used to reset shared or production data. `start.sh` runs Streamlit on `PORT` (default `3000`).
+The Streamlit server uses `PORT` (default `3000`). Do not run development seeding or workflow verification scripts against production data without reviewing their effects.
 
 ### Run Tests
 
@@ -192,109 +153,27 @@ sh start.sh
 python -m unittest discover -s tests -v
 ```
 
-Additional development checks:
-
-```bash
-python verify_database.py
-python verify_workflow.py
-```
-
-These checks require suitable database configuration and may create demonstration records. Review their effects before running against a shared database.
-
-## Demo Walkthrough
-
-1. Launch the Streamlit application and choose a simulated Sales role. The role selector is not user authentication.
-2. Open **New Inquiry & Costing**. Choose a customer and product, inspect the cost breakdown, and save an inquiry.
-3. Open **Historical Prices & Quote Guidance**. Compare synthetic historical transactions and review the model estimate, cost floor, and payment-term effects.
-4. Check the **prediction source** indicator: RunPod remote inference, local model fallback, or unavailable.
-5. Enter a manually proposed quotation price and save a draft.
-6. Open **Quote Records & Downloads** and submit the saved version for approval.
-7. Switch to the simulated Manager role and approve or reject the quotation with a comment.
-8. Return to records and export the saved quotation as CSV or printable HTML.
-
-**TODO — confirm the final demo sequence, screenshots, and displayed page titles against the published application.**
-
-## AI Model and Evaluation
-
-### Objective and Method
-
-The model estimates **historical transaction unit prices**, not purchase probability, customer trustworthiness, an optimal-profit selling price, or a guaranteed market quote.
-
-The saved artifact contains separate `StandardScaler + Ridge(alpha=1)` pipelines by **product / currency / unit** group. Numeric input features are:
-
-- Quantity
-- Historical unit cost
-- Ordinal transaction date
-- Month
-
-The artifact was trained offline using fixed-seed synthetic transactions generated by `generate_data.generate()`. Imported business data and newly created inquiries do **not** automatically retrain the model.
-
-### Evaluation
-
-The committed evaluation artifact (`models/historical_price/evaluation.json`) reports:
-
-| Measure | Recorded result |
-|---|---|
-| Training records | 239 |
-| Held-out test records | 61 |
-| Split date | 2026-08-13 |
-| Split method | Chronological, keeping same-day records together |
-| Baseline | Training-set median transaction price for each group |
-| Metric | Mean Absolute Error (MAE) |
-| Product groups | 6 |
-| Groups with lower model MAE than baseline | 4 of 6 |
-| Groups without improvement | P001 and P005 |
-
-These results evaluate behavior on **synthetic data only**. They do not establish real-world pricing accuracy or business impact. Detailed per-group metrics and applicability ranges are available in [MODEL_GUIDE.md](MODEL_GUIDE.md) and the evaluation JSON.
-
-### Applicability and Human Control
-
-Predictions may be unavailable for unsupported product/currency/unit combinations, missing cost information, insufficient data, or out-of-range inputs. The application retains cost and historical-statistics references where available. Model estimates do not automatically override manually proposed prices or the minimum-margin floor.
+Database and workflow verification scripts are also provided: `verify_database.py` and `verify_workflow.py`.
 
 ## How We Use Replit (Required)
 
-- **Development:** Replit and Replit Agent were used to implement, iterate on, and debug the Python Streamlit quotation workflow.
-- **Application hosting:** Replit hosts the Streamlit application and provides the published demonstration URL.
-- **Database:** The application connects to PostgreSQL through the runtime `DATABASE_URL`.
-- **Secrets management:** `RUNPOD_API_KEY`, `RUNPOD_ENDPOINT_ID`, and database credentials are configured through environment Secrets rather than committed source code.
-- **Integration:** The Streamlit historical-price page invokes `runpod_client.py` when it needs a model prediction.
-- **Deployment:** Changes to the live application require verification and, when appropriate, a new Replit publication.
+- **Development:** Replit and Replit Agent supported implementation, iteration, and debugging.
+- **Hosting:** The Streamlit quotation application is deployed using Replit.
+- **Data and configuration:** PostgreSQL connects through `DATABASE_URL`; sensitive credentials are managed through Replit Secrets.
+- **Integration:** The historical-price page uses `runpod_client.py` to request remote predictions.
 
-**Proof of Use:** **TODO — create and link** `submission/SDC2026_Nameless_Replit_POU.pdf`, including development/hosting evidence and screenshots with credentials redacted.
+**Proof of Use:** **TODO — attach `SDC2026_Nameless_Replit_POU.pdf` using the official submission process.**
 
 ## How We Use RunPod (Required)
-- **Endpoint Name:** SDC-project
-- **Endpoint ID:** `4qbw60i5ghyhfo`
-- **Endpoint URL:** https://api.runpod.ai/v2/4qbw60i5ghyhfo
-- **Endpoint Type:** Queue-based Serverless
-- **Compute:** CPU
-### Workload
 
-RunPod Serverless hosts **CPU-based inference** for the existing historical transaction-price model. It loads the trusted `models/historical_price/model.joblib` artifact and reuses the project's prediction logic. The worker does **not** retrain the model, implement a second pricing algorithm, or connect to the application database.
+- **Endpoint:** `SDC-project` — [https://api.runpod.ai/v2/4qbw60i5ghyhfo](https://api.runpod.ai/v2/4qbw60i5ghyhfo).
+- **Compute:** RunPod Serverless **CPU**, Queue based. No GPU use is claimed.
+- **Worker:** `runpod/handler.py`, packaged using `runpod/Dockerfile` and the trusted saved model artifact.
+- **Integration:** `runpod_client.py` submits a job to `/run`, polls `/status/{job_id}`, and returns the result to Streamlit.
+- **Reliability:** The interface identifies the prediction source as RunPod, local fallback, or unavailable.
+- **Data boundary:** The worker receives model input fields, not the application's PostgreSQL credentials.
 
-### Deployment
-
-- **Service:** RunPod Serverless, **Queue** endpoint.
-- **Source:** This GitHub repository.
-- **Dockerfile:** `runpod/Dockerfile`, built using the **repository root** as context.
-- **Worker entry point:** `runpod/handler.py`, which calls `runpod.serverless.start(...)`.
-- **Compute:** CPU, not GPU.
-- **Endpoint name:** `SDC-project`.
-- **Endpoint ID / URL:** **TODO — add actual Endpoint ID and URL**.
-- **Configuration:** **TODO — confirm and document final CPU size, maximum workers, active workers, and execution timeout from the RunPod dashboard.**
-
-### API Integration
-
-The Streamlit historical-price page calls `runpod_client.predict_price(...)`. The client:
-
-1. Sends a JSON request to `POST https://api.runpod.ai/v2/<ENDPOINT_ID>/run`.
-2. Polls `GET https://api.runpod.ai/v2/<ENDPOINT_ID>/status/<JOB_ID>` while the job is queued or running.
-3. Reads the worker's prediction and metadata after successful completion.
-4. Labels the result as `runpod`, `local_fallback`, or `unavailable`.
-
-The current page enables an explicitly labeled local fallback if the remote request fails. For a strict remote verification, use `allow_local_fallback=False` in a controlled test.
-
-### Example Request
+Example request body:
 
 ```json
 {
@@ -309,120 +188,58 @@ The current page enables an explicitly labeled local fallback if the remote requ
 }
 ```
 
-This example matches the checked-in test input. It is **not** a real Malaysian market transaction.
+The model runs on CPU because the current scikit-learn inference workload does not require GPU acceleration. **If the competition separately mandates GPU usage, organizer confirmation is needed.**
 
-### Verification and Evidence
+**Proof of Use:** **TODO — attach `SDC2026_Nameless_Runpod_POU.pdf` with endpoint/build/request evidence and redacted credentials.**
 
-A manual RunPod dashboard request was reported successful during setup. The repository also includes integration tests that mock API responses; mocked tests alone do not prove a live deployment is reachable.
+## Model Evaluation and Limitations
 
-**TODO — attach and verify evidence for all of the following:**
+The model predicts **historical transaction unit prices** using quantity, historical unit cost, transaction date, and month, with separate models by product/currency/unit. Training is offline using reproducible synthetic data.
 
-- RunPod Endpoint in **Ready** state.
-- Successful Docker build.
-- Completed inference request with the output visible.
-- Replit application showing **RunPod remote inference** as the prediction source.
-- A corresponding new request in the RunPod dashboard from the Replit application.
-- Final production deployment confirmation.
+The checked-in evaluation records **239 training and 61 test transactions**, split chronologically. Model MAE improves over the training-median baseline for **4 of 6 product groups**; it does not improve for P001 and P005. See [MODEL_GUIDE.md](MODEL_GUIDE.md) and [`evaluation.json`](models/historical_price/evaluation.json).
 
-**Proof of Use:** **TODO — create and link** `submission/SDC2026_Nameless_Runpod_POU.pdf`. Redact all API keys and credentials in screenshots.
-
-> **Organizer clarification needed:** The official README template illustrates GPU inference. This implementation uses CPU inference; **TODO — confirm acceptance of CPU RunPod Serverless use if the competition separately requires GPU compute**.
-
-## Data, Privacy and Security
-
-The project uses reproducible synthetic sample data for its demonstration and offline model training. Valid business records entered through the app may be stored in PostgreSQL. The code does not claim automatic data deletion, production-grade encryption, or certified privacy compliance.
-
-The Sales and Manager roles are simulated workflow controls, **not authenticated identities**. The application is not a production authorization system.
-
-RunPod requests contain the model's input features rather than complete database records. API keys and database credentials must remain in environment Secrets and must never be included in the README, source control, screenshots, or client-side UI.
-
-## Testing and Verification
-
-Repository tests cover calculation rules, data validation, model behavior, and RunPod client/worker integration scenarios. The RunPod integration tests use mocked HTTP responses and the existing trusted local model artifact; they are not a substitute for a live endpoint test.
-
-The available commands are:
-
-```bash
-python -m unittest discover -s tests -v
-python verify_database.py
-python verify_workflow.py
-```
-
-**Verification status:**
-
-| Check | Status |
-|---|---|
-| RunPod Worker and client code present | Verified in repository |
-| Historical-price page imports RunPod client | Verified in repository |
-| Three-language prediction-source labels | Verified in repository |
-| RunPod manual request | Reported successful during setup |
-| Latest full automated test suite | **TODO — record dated test run and results** |
-| Live Replit-to-RunPod end-to-end test | **TODO — record screenshot and corresponding RunPod request** |
-| Published website on latest code | **TODO — verify after Republish** |
-| Full quotation and approval walkthrough | **TODO — complete and record results** |
+Predictions may be unavailable for unsupported inputs or groups. They never override minimum-margin rules or automatically set the final quote. The Sales/Manager role switch is a demonstration control, **not production authentication**. Payment summaries and stock reminders are informational, not automatic credit decisions or procurement actions.
 
 ## Challenges & Learnings
 
-- **Deploying an existing ML model remotely:** The team reused a saved scikit-learn artifact rather than creating an unrelated AI model merely to demonstrate infrastructure.
-- **Asynchronous inference:** RunPod Queue requests require job submission and status polling; the Replit client handles both.
-- **Resilience and transparency:** The application labels local fallback rather than presenting every estimate as remote inference.
-- **Cost-conscious compute:** CPU execution fits the current Ridge regression workload. GPU acceleration is not claimed.
-- **Synthetic-data boundaries:** The team separated prototype model evaluation from real-world business claims.
-- **Multilingual UX and workflow state:** The application maintains translation resources and versioned quotation snapshots across multiple pages.
-
-**TODO — add any other team-specific development challenges and verified lessons from testing.**
+- Reused a single offline-trained model across local and RunPod inference instead of maintaining different algorithms.
+- Integrated asynchronous RunPod Queue requests and labeled fallback behavior.
+- Combined explainable quotation rules with ML references while keeping final decisions human-controlled.
+- Developed a multilingual, database-backed demonstration with versioned quotation records.
 
 ## Future Improvements
 
-- [ ] Validate the approach using permissioned real manufacturing transaction data, including appropriate Malaysian product, currency, and unit coverage.
-- [ ] Retrain and benchmark models on representative data; compare against simple baselines and evaluate calibration/robustness.
-- [ ] Improve full Simplified Chinese, English, and Bahasa Melayu translation coverage.
-- [ ] Introduce authenticated user accounts and production-grade role-based access control.
-- [ ] Complete partial-payment ledger import, reconciliation, and reporting.
-- [ ] Expand configurable quotation policy controls and audit reporting.
-- [ ] Improve inference observability, error monitoring, and deployment verification.
-- [ ] Investigate more advanced forecasting or optimization only when supported by sufficient data and proper evaluation.
+- [ ] Validate and retrain with consented real manufacturing data, including Malaysian currency/product coverage.
+- [ ] Improve multilingual consistency and model evaluation across products.
+- [ ] Add authenticated accounts, stronger access controls, and operational monitoring.
+- [ ] Expand partial-payment tracking and configurable approval policies.
 
 ## Team
 
-| Member | Role | GitHub |
+| Name | Role | GitHub |
 |---|---|---|
-| ZHANG XINRUI | **TODO — confirm team responsibilities** | **TODO — confirm personal GitHub profile** |
-| **TODO — Member 2** | **TODO — role** | **TODO — GitHub** |
-| **TODO — Member 3** | **TODO — role** | **TODO — GitHub** |
-| **TODO — Member 4** | **TODO — role** | **TODO — GitHub** |
-
-## AI-Assisted Development and Third-Party Resources
-
-Replit Agent was used to assist with application implementation and debugging. ChatGPT was used for requirements discussion, documentation drafting, translation support, and technical guidance. The team remains responsible for reviewing generated work and verifying submitted claims.
-
-Core Python dependencies are declared in `pyproject.toml` and locked in `uv.lock`. Their respective upstream licenses remain applicable. The project repository's Apache 2.0 license does not replace third-party license obligations.
+| ZHANG XINRUI | **TODO — role** | **TODO — profile (optional)** |
+| **TODO — member 2** | **TODO — role** | **TODO — profile (optional)** |
+| **TODO — member 3** | **TODO — role** | **TODO — profile (optional)** |
+| **TODO — member 4** | **TODO — role** | **TODO — profile (optional)** |
 
 ## Submission Checklist
 
-The following follows the [official SDC Hackathon submission README template](https://github.com/michaelzhngg/SDC_Hackathon_Submission_Template). The official submission documents are provided through the template's linked Google Drive folder.
+Based on the [official SDC Hackathon submission template](https://github.com/michaelzhngg/SDC_Hackathon_Submission_Template):
 
-- [x] Team name, domain, SDG track and university listed in this README (**TODO — cross-check registration**).
-- [x] GitHub repository and live demo links listed.
-- [x] Root Apache License 2.0 `LICENSE` file present.
-- [x] RunPod integration code and dedicated RunPod documentation present.
-- [ ] **TODO — confirm repository is public and accessible to judges.**
-- [ ] **TODO — add final RunPod Endpoint ID / URL.**
-- [ ] **TODO — add slide deck link.**
-- [ ] **TODO — add YouTube demo/pitch video link.**
-- [ ] **TODO — add `submission/SDC2026_Nameless_Preliminary.pdf`.**
-- [ ] **TODO — add `submission/SDC2026_Nameless_TechDeclaration.pdf`.**
-- [ ] **TODO — add `submission/SDC2026_Nameless_Replit_POU.pdf`.**
-- [ ] **TODO — add `submission/SDC2026_Nameless_Runpod_POU.pdf`.**
-- [ ] **TODO — verify all required signatures, team details, and technology disclosures.**
-- [ ] **TODO — verify RunPod CPU deployment satisfies the organizer's requirements.**
-- [ ] **TODO — test published Replit-to-RunPod inference and preserve proof.**
-- [ ] **TODO — verify the full demonstration and all public links.**
-- [ ] **TODO — ensure no secrets or credentials are committed.**
-- [ ] **TODO — complete official submission through the designated platform.**
+- [x] Team information, Domain 2, SDG track, and university provided.
+- [x] GitHub repository, live demo, RunPod endpoint, and slide deck linked.
+- [x] Replit and RunPod usage described.
+- [x] Apache License 2.0 included.
+- [ ] **TODO — add public YouTube demo video link.**
+- [ ] **TODO — complete `SDC2026_Nameless_Preliminary.pdf`.**
+- [ ] **TODO — complete `SDC2026_Nameless_TechDeclaration.pdf`.**
+- [ ] **TODO — complete `SDC2026_Nameless_Replit_POU.pdf`.**
+- [ ] **TODO — complete `SDC2026_Nameless_Runpod_POU.pdf`.**
+- [ ] **TODO — confirm all required signatures and official submission steps.**
 
-The existence of a README or a working demo does not mean the formal competition submission is complete.
+Official submission forms: [SDC submission documents and templates](https://drive.google.com/drive/folders/1xw7c2aN8N-at8hPEULzkcU76e_FFb0Ef).
 
 ## License
 
-This project is licensed under the [Apache License 2.0](LICENSE).
+Licensed under the [Apache License 2.0](LICENSE).
