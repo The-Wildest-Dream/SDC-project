@@ -9,9 +9,9 @@ A Python and Streamlit demonstration application for small and medium-sized manu
 | Team Name | Nameless |
 | Domain | Domain 2 |
 | SDG Track and Target | TODO — not confirmed |
-| Team Leader | TODO |
-| University Affiliation(s) | TODO |
-| Number of Members | TODO |
+| Team Leader | ZHANG XINRUI |
+| University Affiliation(s) | XIAMEN UNIVERSITY MALAYSIA |
+| Number of Members | 4 |
 
 | Name | Role and Contribution | GitHub |
 |---|---|---|
