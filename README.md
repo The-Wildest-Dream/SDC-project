@@ -24,7 +24,7 @@
 | **GitHub Repository** | [The-Wildest-Dream/SDC-project](https://github.com/The-Wildest-Dream/SDC-project) |
 | **Replit Project** | [SME-Quotation-Evaluation-System](https://replit.com/@realityfordream/SME-Quotation-Evaluation-System) |
 | **Live Demo** | [SME Manufacturing Quotation Assistant](https://zhong-xiao-zhi-zao-qi-ye-bao-jie-fu-zhu-xi-tong.replit.app/) |
-| **RunPod Endpoint** | **TODO — insert `https://api.runpod.ai/v2/<RUNPOD_ENDPOINT_ID>` using the actual Endpoint ID (never include an API key)** |
+| **RunPod Endpoint** | https://api.runpod.ai/v2/4qbw60i5ghyhfo |
 | **Slide Deck** | **TODO — add a public viewing link** |
 | **Demo Video** | **TODO — add the YouTube pitch/demo video link** |
 
