@@ -50,7 +50,7 @@ Implementation claims below describe repository code; they are not all claims of
 - Inventory availability reminders; they do not trigger purchasing or promise delivery.
 - Simulated sales/manager quote workflow, version snapshots, approval records, and operation logs.
 - CSV and printable HTML quote exports.
-- A session-scoped language selector and static resources for Simplified Chinese, English, and Bahasa Melayu. Translation coverage is incomplete; some interface text falls back to Chinese.
+- A session-scoped language selector and static resources for Simplified Chinese, English, and Bahasa Melayu. The project is shown in Chinese originally.
 
 ## Demo Walkthrough
 
