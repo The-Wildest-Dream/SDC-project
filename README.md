@@ -216,10 +216,10 @@ Predictions may be unavailable for unsupported inputs or groups. They never over
 
 | Name | Role | GitHub |
 |---|---|---|
-| ZHANG XINRUI | **Team Lead / AI / RunPod** | **TODO — profile (optional)** |
+| ZHANG XINRUI | **Team Lead / AI / RunPod** | **@The-Wildest-Dream** |
 | SU YIXUAN | **Frontend** | **TODO — profile (optional)** |
 | YANG YUHAN | **Data Analysing** | **TODO — profile (optional)** |
-| ZENG GUANCHUN | **Backend** | **TODO — profile (optional)** |
+| ZENG GUANCHUN | **Backend** | **@qingfengputs** |
 
 ## Submission Checklist
 
