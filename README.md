@@ -114,7 +114,7 @@ flowchart LR
 
 ## How to Run
 
-### Option 1 — Replit (Recommended)
+### Option 1 — Replit
 
 1. Open the [Replit project](https://replit.com/@realityfordream/SME-Quotation-Evaluation-System).
 2. Configure PostgreSQL and the following Replit Secrets:
@@ -123,8 +123,6 @@ flowchart LR
    - `RUNPOD_ENDPOINT_ID` — `4qbw60i5ghyhfo`.
 3. Start the existing application workflow and open Preview. The published application is linked above.
 4. When publishing changes, confirm that deployment Secrets are available and republish as needed.
-
-**Never commit API keys or database passwords.**
 
 ### Option 2 — Local Development
 
