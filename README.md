@@ -226,8 +226,8 @@ Predictions may be unavailable for unsupported inputs or groups. They never over
 | Name | Role | GitHub |
 |---|---|---|
 | ZHANG XINRUI | **Team Lead / AI / RunPod** | **@The-Wildest-Dream** |
-| SU YIXUAN | **Frontend** | **TODO — profile (optional)** |
-| YANG YUHAN | **Data Analysing** | **TODO — profile (optional)** |
+| SU YIXUAN | **Frontend** | **None** |
+| YANG YUHAN | **Data Analysing** | **None** |
 | ZENG GUANCHUN | **Backend** | **@qingfengputs** |
 
 ## Submission Checklist
